@@ -1,0 +1,3 @@
+epsilonX: 1.0e-4
+radiusX: 3.6
+notes: "Parameters derived from SC2 wrapper setup"

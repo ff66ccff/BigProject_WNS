@@ -1,0 +1,43 @@
+paths:
+  working_dir: ".."
+  python: "python"
+  mgltools_root: "D:/MGLTools"
+  autodock4: "autodock4"
+  autogrid4: "autogrid4"
+  gmx: "gmx"
+
+inputs:
+  raw_protein_pdb: "data/MAB_1134c.pdb"
+  cleaned_protein_pdb: "pdb/protein_clean.pdb"
+  receptor_pdbqt: "pdbqt/protein.pdbqt"
+  raw_ligand_mol2: "data/MAB_2301.pdb"
+  ligand_pdbqt: "wrapper/MAB_2301.pdbqt"
+  ligand_basename: "wrapper/MAB_2301"
+  ligand_types: "A C HD N OA"
+  complex_output_pdb: "complex/complex_filtered.pdb"
+  pose_files:
+    - "autodock_runs/*.pdbqt"
+
+receptor:
+  seed: 20231129
+
+autogrid:
+  npts: [60, 60, 60]
+  center: [0.0, 0.0, 0.0]
+  spacing: 0.375
+
+wrapper:
+  seeds: [101, 202, 303, 404, 505]
+  output_dir: "autodock_runs"
+  template_dir: "scripts/templates"
+  autogrid_log: "autodock_runs/autogrid.log"
+
+ambertools:
+  ligand_script: "scripts/ligand_param.sh"
+
+gromacs:
+  pipeline_script: "scripts/gromacs_pipeline.sh"
+  workdir: "gmx"
+
+manifest:
+  path: "manifest/run-manifest.yml"

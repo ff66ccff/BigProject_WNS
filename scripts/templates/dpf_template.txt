@@ -1,0 +1,12 @@
+autodock_parameter_version 4.2
+outlev 1
+intelec
+seed ${seed}
+ligand_types ${ligand_types}
+fld ${gridfld}
+map ${maps}
+move ${ligand_pdbqt}
+about ${center_x} ${center_y} ${center_z}
+tran0 ${center_x} ${center_y} ${center_z}
+quaternion0 0 0 0 1
+analysis

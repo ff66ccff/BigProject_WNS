@@ -1,0 +1,52 @@
+# Copy this file to config.yml 并调整路径、文件名以及参数。
+# 复制此文件为 config.yml 并根据实际环境修改。
+
+paths:
+  working_dir: ".."                  # 项目根目录（相对于 scripts/）
+  python: "python"                   # Windows 侧 Python 可执行文件
+  mgltools_root: "D:/MGLTools"       # MGLTools 安装根目录
+  autodock4: "autodock4"             # WSL 中 autodock4 可执行文件（或绝对路径）
+  autogrid4: "autogrid4"             # WSL 中 autogrid4 可执行文件
+  gmx: "gmx"                         # WSL 中 gmx 命令
+
+inputs:
+  # === 蛋白输入 ===
+  raw_protein_pdb: "data/protein_raw.pdb"      # 原始蛋白 PDB
+  cleaned_protein_pdb: "pdb/protein_clean.pdb" # 清洗后蛋白
+  receptor_pdbqt: "pdbqt/protein.pdbqt"        # 受体 PDBQT
+
+  # === 配体输入 ===
+  raw_ligand_mol2: "data/ligand.mol2"          # 原始配体（支持 pdb/mol2）
+  ligand_pdbqt: "wrapper/ligand.pdbqt"         # 配体 PDBQT
+  ligand_basename: "wrapper/ligand"            # AmberTools 输出前缀
+  ligand_types: "A C HD N OA"                  # 配体原子类型
+
+  # === 复合体输出 ===
+  complex_output_pdb: "complex/complex_filtered.pdb"
+  pose_files:
+    - "autodock_runs/*.pdbqt"                  # AutoDock 输出的 pose 文件
+
+receptor:
+  seed: 20231129                               # prepare_receptor4.py 随机种子
+
+autogrid:
+  npts: [60, 60, 60]                           # 网格点数 (x, y, z)
+  center: [0.0, 0.0, 0.0]                      # 网格中心坐标（根据蛋白活性位点调整）
+  spacing: 0.375                               # 网格间距 (Å)
+
+wrapper:
+  seeds: [101, 202, 303, 404, 505]             # AutoDock 随机种子列表
+  output_dir: "autodock_runs"                  # 对接输出目录
+  template_dir: "scripts/templates"            # GPF/DPF 模板目录
+  autogrid_log: "autodock_runs/autogrid.log"
+
+ambertools:
+  ligand_script: "scripts/ligand_param.sh"     # 配体参数化脚本
+  # skip: false                                # 设为 true 可跳过 AmberTools 步骤
+
+gromacs:
+  pipeline_script: "scripts/gromacs_pipeline.sh"
+  workdir: "gmx"
+
+manifest:
+  path: "manifest/run-manifest.yml"

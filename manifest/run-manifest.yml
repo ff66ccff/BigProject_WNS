@@ -1,0 +1,46 @@
+software:
+  autodock:
+    version: null
+  autogrid:
+    version: null
+  ambertools:
+    version: null
+  gromacs:
+    version: null
+  mgltools:
+    version: null
+commands:
+- python D:\PersonalFile\Documents\BigProject\SRC\project\scripts\preprocess_pdb.py
+  D:\PersonalFile\Documents\BigProject\SRC\project\data\MAB_1134c.pdb -o D:\PersonalFile\Documents\BigProject\SRC\project\pdb\protein_clean.pdb
+- D:\MGLTools\python.exe D:\MGLTools\Lib\site-packages\AutoDockTools\Utilities24\prepare_receptor4.py
+  -r D:\PersonalFile\Documents\BigProject\SRC\project\pdb\protein_clean.pdb -o D:\PersonalFile\Documents\BigProject\SRC\project\pdbqt\protein.pdbqt
+  -A checkhydrogens -U nphs_lps -e seed=20231129
+- python D:\PersonalFile\Documents\BigProject\SRC\project\scripts\preprocess_pdb.py
+  D:\PersonalFile\Documents\BigProject\SRC\project\data\MAB_1134c.pdb -o D:\PersonalFile\Documents\BigProject\SRC\project\pdb\protein_clean.pdb
+- D:\MGLTools\python.exe D:\MGLTools\Lib\site-packages\AutoDockTools\Utilities24\prepare_receptor4.py
+  -r D:\PersonalFile\Documents\BigProject\SRC\project\pdb\protein_clean.pdb -o D:\PersonalFile\Documents\BigProject\SRC\project\pdbqt\protein.pdbqt
+  -A checkhydrogens -U nphs_lps -e seed=20231129
+- D:\MGLTools\python.exe D:\MGLTools\Lib\site-packages\AutoDockTools\Utilities24\prepare_ligand4.py
+  -l D:\PersonalFile\Documents\BigProject\SRC\project\data\MAB_2301.pdb -o D:\PersonalFile\Documents\BigProject\SRC\project\wrapper\MAB_2301.pdbqt
+  -A checkhydrogens
+random_seeds:
+- '20231129'
+- '20231129'
+inputs:
+  protein_pdb: null
+  ligand: null
+  parameters: []
+  raw_protein: D:\PersonalFile\Documents\BigProject\SRC\project\data\MAB_1134c.pdb
+outputs:
+  pdbqt: null
+  docking_logs: []
+  complex_structure: null
+  md_traj: []
+  cleaned_protein: D:\PersonalFile\Documents\BigProject\SRC\project\pdb\protein_clean.pdb
+  receptor_pdbqt: D:\PersonalFile\Documents\BigProject\SRC\project\pdbqt\protein.pdbqt
+  ligand_pdbqt: D:\PersonalFile\Documents\BigProject\SRC\project\wrapper\MAB_2301.pdbqt
+parameters:
+  autogrid: {}
+  autodock: {}
+  gromacs: {}
+notes: ''
