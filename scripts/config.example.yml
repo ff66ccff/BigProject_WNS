@@ -42,7 +42,8 @@ wrapper:
 
 ambertools:
   ligand_script: "scripts/ligand_param.sh"     # 配体参数化脚本
-  # skip: false                                # 设为 true 可跳过 AmberTools 步骤
+  skip: false                                   # 设为 true 可跳过 AmberTools 步骤
+  fail_on_missing: false                        # 如为 true 则在缺少 antechamber 时中止流程
 
 gromacs:
   pipeline_script: "scripts/gromacs_pipeline.sh"

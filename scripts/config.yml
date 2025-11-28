@@ -7,12 +7,12 @@ paths:
   gmx: "gmx"
 
 inputs:
-  raw_protein_pdb: "data/MAB_1134c.pdb"
+  raw_protein_pdb: "data/MAB_2301.pdb"
   cleaned_protein_pdb: "pdb/protein_clean.pdb"
   receptor_pdbqt: "pdbqt/protein.pdbqt"
-  raw_ligand_mol2: "data/MAB_2301.pdb"
-  ligand_pdbqt: "wrapper/MAB_2301.pdbqt"
-  ligand_basename: "wrapper/MAB_2301"
+  raw_ligand_mol2: "data/intermediate1.mol2"
+  ligand_pdbqt: "wrapper/intermediate1.pdbqt"
+  ligand_basename: "wrapper/intermediate1"
   ligand_types: "A C HD N OA"
   complex_output_pdb: "complex/complex_filtered.pdb"
   pose_files:
@@ -34,10 +34,16 @@ wrapper:
 
 ambertools:
   ligand_script: "scripts/ligand_param.sh"
+  skip: true  # 配体参数化在 GROMACS 全自动脚本中处理
 
 gromacs:
   pipeline_script: "scripts/gromacs_pipeline.sh"
+  full_auto_script: "scripts/gromacs_full_auto.sh"
   workdir: "gmx"
+  mdp_dir: "mdp"
+  # 并行设置
+  ntmpi: 1
+  ntomp: 8
 
 manifest:
   path: "manifest/run-manifest.yml"

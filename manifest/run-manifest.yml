@@ -23,14 +23,413 @@ commands:
 - D:\MGLTools\python.exe D:\MGLTools\Lib\site-packages\AutoDockTools\Utilities24\prepare_ligand4.py
   -l D:\PersonalFile\Documents\BigProject\SRC\project\data\MAB_2301.pdb -o D:\PersonalFile\Documents\BigProject\SRC\project\wrapper\MAB_2301.pdbqt
   -A checkhydrogens
+- python D:\PersonalFile\Documents\BigProject\SRC\project\scripts\preprocess_pdb.py
+  D:\PersonalFile\Documents\BigProject\SRC\project\data\MAB_1134c.pdb -o D:\PersonalFile\Documents\BigProject\SRC\project\pdb\protein_clean.pdb
+- D:\MGLTools\python.exe D:\MGLTools\Lib\site-packages\AutoDockTools\Utilities24\prepare_receptor4.py
+  -r protein_clean.pdb -o D:\PersonalFile\Documents\BigProject\SRC\project\pdbqt\protein.pdbqt
+  -A checkhydrogens -U nphs_lps -e seed=20231129
+- D:\MGLTools\python.exe D:\MGLTools\Lib\site-packages\AutoDockTools\Utilities24\prepare_ligand4.py
+  -l MAB_2301.pdb -o D:\PersonalFile\Documents\BigProject\SRC\project\wrapper\MAB_2301.pdbqt
+  -A checkhydrogens
+- python D:\PersonalFile\Documents\BigProject\SRC\project\scripts\preprocess_pdb.py
+  D:\PersonalFile\Documents\BigProject\SRC\project\data\MAB_1134c.pdb -o D:\PersonalFile\Documents\BigProject\SRC\project\pdb\protein_clean.pdb
+- D:\MGLTools\python.exe D:\MGLTools\Lib\site-packages\AutoDockTools\Utilities24\prepare_receptor4.py
+  -r protein_clean.pdb -o D:\PersonalFile\Documents\BigProject\SRC\project\pdbqt\protein.pdbqt
+  -A checkhydrogens -U nphs_lps -e seed=20231129
+- D:\MGLTools\python.exe D:\MGLTools\Lib\site-packages\AutoDockTools\Utilities24\prepare_ligand4.py
+  -l MAB_2301.pdb -o D:\PersonalFile\Documents\BigProject\SRC\project\wrapper\MAB_2301.pdbqt
+  -A checkhydrogens
+- skip ligand parameterization (antechamber missing)
+- python D:\PersonalFile\Documents\BigProject\SRC\project\scripts\preprocess_pdb.py
+  D:\PersonalFile\Documents\BigProject\SRC\project\data\MAB_1134c.pdb -o D:\PersonalFile\Documents\BigProject\SRC\project\pdb\protein_clean.pdb
+- D:\MGLTools\python.exe D:\MGLTools\Lib\site-packages\AutoDockTools\Utilities24\prepare_receptor4.py
+  -r protein_clean.pdb -o D:\PersonalFile\Documents\BigProject\SRC\project\pdbqt\protein.pdbqt
+  -A checkhydrogens -U nphs_lps -e seed=20231129
+- D:\MGLTools\python.exe D:\MGLTools\Lib\site-packages\AutoDockTools\Utilities24\prepare_ligand4.py
+  -l MAB_2301.pdb -o D:\PersonalFile\Documents\BigProject\SRC\project\wrapper\MAB_2301.pdbqt
+  -A checkhydrogens
+- skip ligand parameterization (antechamber missing)
+- python D:\PersonalFile\Documents\BigProject\SRC\project\scripts\preprocess_pdb.py
+  D:\PersonalFile\Documents\BigProject\SRC\project\data\MAB_1134c.pdb -o D:\PersonalFile\Documents\BigProject\SRC\project\pdb\protein_clean.pdb
+- D:\MGLTools\python.exe D:\MGLTools\Lib\site-packages\AutoDockTools\Utilities24\prepare_receptor4.py
+  -r protein_clean.pdb -o D:\PersonalFile\Documents\BigProject\SRC\project\pdbqt\protein.pdbqt
+  -A checkhydrogens -U nphs_lps -e seed=20231129
+- D:\MGLTools\python.exe D:\MGLTools\Lib\site-packages\AutoDockTools\Utilities24\prepare_ligand4.py
+  -l MAB_2301.pdb -o D:\PersonalFile\Documents\BigProject\SRC\project\wrapper\MAB_2301.pdbqt
+  -A checkhydrogens
+- skip ligand parameterization (antechamber missing)
+- python D:\PersonalFile\Documents\BigProject\SRC\project\scripts\run_autodock_batch.py
+  --config D:\PersonalFile\Documents\BigProject\SRC\project\scripts\config.yml
+- python D:\PersonalFile\Documents\BigProject\SRC\project\scripts\build_complex.py
+  D:\PersonalFile\Documents\BigProject\SRC\project\pdb\protein_clean.pdb D:\PersonalFile\Documents\BigProject\SRC\project\autodock_runs\MAB_2301.pdbqt
+  D:\PersonalFile\Documents\BigProject\SRC\project\autodock_runs\protein.pdbqt -o
+  D:\PersonalFile\Documents\BigProject\SRC\project\complex\complex_filtered.pdb
+- python D:\PersonalFile\Documents\BigProject\SRC\project\scripts\preprocess_pdb.py
+  D:\PersonalFile\Documents\BigProject\SRC\project\data\MAB_1134c.pdb -o D:\PersonalFile\Documents\BigProject\SRC\project\pdb\protein_clean.pdb
+- D:\MGLTools\python.exe D:\MGLTools\Lib\site-packages\AutoDockTools\Utilities24\prepare_receptor4.py
+  -r protein_clean.pdb -o D:\PersonalFile\Documents\BigProject\SRC\project\pdbqt\protein.pdbqt
+  -A checkhydrogens -U nphs_lps -e seed=20231129
+- D:\MGLTools\python.exe D:\MGLTools\Lib\site-packages\AutoDockTools\Utilities24\prepare_ligand4.py
+  -l MAB_2301.pdb -o D:\PersonalFile\Documents\BigProject\SRC\project\wrapper\MAB_2301.pdbqt
+  -A checkhydrogens
+- skip ligand parameterization (antechamber missing)
+- python D:\PersonalFile\Documents\BigProject\SRC\project\scripts\run_autodock_batch.py
+  --config D:\PersonalFile\Documents\BigProject\SRC\project\scripts\config.yml
+- python D:\PersonalFile\Documents\BigProject\SRC\project\scripts\build_complex.py
+  D:\PersonalFile\Documents\BigProject\SRC\project\pdb\protein_clean.pdb D:\PersonalFile\Documents\BigProject\SRC\project\autodock_runs\MAB_2301.pdbqt
+  D:\PersonalFile\Documents\BigProject\SRC\project\autodock_runs\protein.pdbqt -o
+  D:\PersonalFile\Documents\BigProject\SRC\project\complex\complex_filtered.pdb
+- python D:\PersonalFile\Documents\BigProject\SRC\project\scripts\preprocess_pdb.py
+  D:\PersonalFile\Documents\BigProject\SRC\project\data\MAB_1134c.pdb -o D:\PersonalFile\Documents\BigProject\SRC\project\pdb\protein_clean.pdb
+- D:\MGLTools\python.exe D:\MGLTools\Lib\site-packages\AutoDockTools\Utilities24\prepare_receptor4.py
+  -r protein_clean.pdb -o D:\PersonalFile\Documents\BigProject\SRC\project\pdbqt\protein.pdbqt
+  -A checkhydrogens -U nphs_lps -e seed=20231129
+- D:\MGLTools\python.exe D:\MGLTools\Lib\site-packages\AutoDockTools\Utilities24\prepare_ligand4.py
+  -l MAB_2301.pdb -o D:\PersonalFile\Documents\BigProject\SRC\project\wrapper\MAB_2301.pdbqt
+  -A checkhydrogens
+- skip ligand parameterization (antechamber missing)
+- python D:\PersonalFile\Documents\BigProject\SRC\project\scripts\run_autodock_batch.py
+  --config D:\PersonalFile\Documents\BigProject\SRC\project\scripts\config.yml
+- python D:\PersonalFile\Documents\BigProject\SRC\project\scripts\build_complex.py
+  D:\PersonalFile\Documents\BigProject\SRC\project\pdb\protein_clean.pdb D:\PersonalFile\Documents\BigProject\SRC\project\autodock_runs\MAB_2301.pdbqt
+  D:\PersonalFile\Documents\BigProject\SRC\project\autodock_runs\protein.pdbqt -o
+  D:\PersonalFile\Documents\BigProject\SRC\project\complex\complex_filtered.pdb
+- python D:\PersonalFile\Documents\BigProject\SRC\project\scripts\preprocess_pdb.py
+  D:\PersonalFile\Documents\BigProject\SRC\project\data\MAB_1134c.pdb -o D:\PersonalFile\Documents\BigProject\SRC\project\pdb\protein_clean.pdb
+- D:\MGLTools\python.exe D:\MGLTools\Lib\site-packages\AutoDockTools\Utilities24\prepare_receptor4.py
+  -r protein_clean.pdb -o D:\PersonalFile\Documents\BigProject\SRC\project\pdbqt\protein.pdbqt
+  -A checkhydrogens -U nphs_lps -e seed=20231129
+- D:\MGLTools\python.exe D:\MGLTools\Lib\site-packages\AutoDockTools\Utilities24\prepare_ligand4.py
+  -l MAB_2301.pdb -o D:\PersonalFile\Documents\BigProject\SRC\project\wrapper\MAB_2301.pdbqt
+  -A checkhydrogens
+- skip ligand parameterization (antechamber missing)
+- python D:\PersonalFile\Documents\BigProject\SRC\project\scripts\run_autodock_batch.py
+  --config D:\PersonalFile\Documents\BigProject\SRC\project\scripts\config.yml
+- python D:\PersonalFile\Documents\BigProject\SRC\project\scripts\build_complex.py
+  D:\PersonalFile\Documents\BigProject\SRC\project\pdb\protein_clean.pdb D:\PersonalFile\Documents\BigProject\SRC\project\autodock_runs\MAB_2301.pdbqt
+  D:\PersonalFile\Documents\BigProject\SRC\project\autodock_runs\protein.pdbqt -o
+  D:\PersonalFile\Documents\BigProject\SRC\project\complex\complex_filtered.pdb
+- python D:\PersonalFile\Documents\BigProject\SRC\project\scripts\preprocess_pdb.py
+  D:\PersonalFile\Documents\BigProject\SRC\project\data\MAB_1134c.pdb -o D:\PersonalFile\Documents\BigProject\SRC\project\pdb\protein_clean.pdb
+- D:\MGLTools\python.exe D:\MGLTools\Lib\site-packages\AutoDockTools\Utilities24\prepare_receptor4.py
+  -r protein_clean.pdb -o D:\PersonalFile\Documents\BigProject\SRC\project\pdbqt\protein.pdbqt
+  -A checkhydrogens -U nphs_lps -e seed=20231129
+- D:\MGLTools\python.exe D:\MGLTools\Lib\site-packages\AutoDockTools\Utilities24\prepare_ligand4.py
+  -l MAB_2301.pdb -o D:\PersonalFile\Documents\BigProject\SRC\project\wrapper\MAB_2301.pdbqt
+  -A checkhydrogens
+- skip ligand parameterization (antechamber missing)
+- python D:\PersonalFile\Documents\BigProject\SRC\project\scripts\run_autodock_batch.py
+  --config D:\PersonalFile\Documents\BigProject\SRC\project\scripts\config.yml
+- python D:\PersonalFile\Documents\BigProject\SRC\project\scripts\build_complex.py
+  D:\PersonalFile\Documents\BigProject\SRC\project\pdb\protein_clean.pdb D:\PersonalFile\Documents\BigProject\SRC\project\autodock_runs\MAB_2301.pdbqt
+  D:\PersonalFile\Documents\BigProject\SRC\project\autodock_runs\protein.pdbqt -o
+  D:\PersonalFile\Documents\BigProject\SRC\project\complex\complex_filtered.pdb
+- python D:\PersonalFile\Documents\BigProject\SRC\project\scripts\preprocess_pdb.py
+  D:\PersonalFile\Documents\BigProject\SRC\project\data\MAB_1134c.pdb -o D:\PersonalFile\Documents\BigProject\SRC\project\pdb\protein_clean.pdb
+- D:\MGLTools\python.exe D:\MGLTools\Lib\site-packages\AutoDockTools\Utilities24\prepare_receptor4.py
+  -r protein_clean.pdb -o D:\PersonalFile\Documents\BigProject\SRC\project\pdbqt\protein.pdbqt
+  -A checkhydrogens -U nphs_lps -e seed=20231129
+- D:\MGLTools\python.exe D:\MGLTools\Lib\site-packages\AutoDockTools\Utilities24\prepare_ligand4.py
+  -l MAB_2301.pdb -o D:\PersonalFile\Documents\BigProject\SRC\project\wrapper\MAB_2301.pdbqt
+  -A checkhydrogens
+- skip ligand parameterization (antechamber missing)
+- python D:\PersonalFile\Documents\BigProject\SRC\project\scripts\run_autodock_batch.py
+  --config D:\PersonalFile\Documents\BigProject\SRC\project\scripts\config.yml
+- python D:\PersonalFile\Documents\BigProject\SRC\project\scripts\build_complex.py
+  D:\PersonalFile\Documents\BigProject\SRC\project\pdb\protein_clean.pdb D:\PersonalFile\Documents\BigProject\SRC\project\autodock_runs\MAB_2301.pdbqt
+  D:\PersonalFile\Documents\BigProject\SRC\project\autodock_runs\protein.pdbqt -o
+  D:\PersonalFile\Documents\BigProject\SRC\project\complex\complex_filtered.pdb
+- python D:\PersonalFile\Documents\BigProject\SRC\project\scripts\preprocess_pdb.py
+  D:\PersonalFile\Documents\BigProject\SRC\project\data\MAB_2301.pdb -o D:\PersonalFile\Documents\BigProject\SRC\project\pdb\protein_clean.pdb
+- D:\MGLTools\python.exe D:\MGLTools\Lib\site-packages\AutoDockTools\Utilities24\prepare_receptor4.py
+  -r protein_clean.pdb -o D:\PersonalFile\Documents\BigProject\SRC\project\pdbqt\protein.pdbqt
+  -A checkhydrogens -U nphs_lps -e seed=20231129
+- D:\MGLTools\python.exe D:\MGLTools\Lib\site-packages\AutoDockTools\Utilities24\prepare_ligand4.py
+  -l intermediate1.mol2 -o D:\PersonalFile\Documents\BigProject\SRC\project\wrapper\intermediate1.pdbqt
+  -A checkhydrogens
+- skip ligand parameterization (antechamber missing)
+- python D:\PersonalFile\Documents\BigProject\SRC\project\scripts\run_autodock_batch.py
+  --config D:\PersonalFile\Documents\BigProject\SRC\project\scripts\config.yml
+- python D:\PersonalFile\Documents\BigProject\SRC\project\scripts\build_complex.py
+  D:\PersonalFile\Documents\BigProject\SRC\project\pdb\protein_clean.pdb D:\PersonalFile\Documents\BigProject\SRC\project\autodock_runs\intermediate1.pdbqt
+  D:\PersonalFile\Documents\BigProject\SRC\project\autodock_runs\MAB_2301.pdbqt D:\PersonalFile\Documents\BigProject\SRC\project\autodock_runs\protein.pdbqt
+  -o D:\PersonalFile\Documents\BigProject\SRC\project\complex\complex_filtered.pdb
+- python D:\PersonalFile\Documents\BigProject\SRC\project\scripts\preprocess_pdb.py
+  D:\PersonalFile\Documents\BigProject\SRC\project\data\MAB_2301.pdb -o D:\PersonalFile\Documents\BigProject\SRC\project\pdb\protein_clean.pdb
+- D:\MGLTools\python.exe D:\MGLTools\Lib\site-packages\AutoDockTools\Utilities24\prepare_receptor4.py
+  -r protein_clean.pdb -o D:\PersonalFile\Documents\BigProject\SRC\project\pdbqt\protein.pdbqt
+  -A checkhydrogens -U nphs_lps -e seed=20231129
+- D:\MGLTools\python.exe D:\MGLTools\Lib\site-packages\AutoDockTools\Utilities24\prepare_ligand4.py
+  -l intermediate1.mol2 -o D:\PersonalFile\Documents\BigProject\SRC\project\wrapper\intermediate1.pdbqt
+  -A checkhydrogens
+- skip ligand parameterization (antechamber missing)
+- python D:\PersonalFile\Documents\BigProject\SRC\project\scripts\run_autodock_batch.py
+  --config D:\PersonalFile\Documents\BigProject\SRC\project\scripts\config.yml
+- python D:\PersonalFile\Documents\BigProject\SRC\project\scripts\build_complex.py
+  D:\PersonalFile\Documents\BigProject\SRC\project\pdb\protein_clean.pdb D:\PersonalFile\Documents\BigProject\SRC\project\autodock_runs\intermediate1.pdbqt
+  D:\PersonalFile\Documents\BigProject\SRC\project\autodock_runs\MAB_2301.pdbqt D:\PersonalFile\Documents\BigProject\SRC\project\autodock_runs\protein.pdbqt
+  -o D:\PersonalFile\Documents\BigProject\SRC\project\complex\complex_filtered.pdb
+- python D:\PersonalFile\Documents\BigProject\SRC\project\scripts\preprocess_pdb.py
+  D:\PersonalFile\Documents\BigProject\SRC\project\data\MAB_2301.pdb -o D:\PersonalFile\Documents\BigProject\SRC\project\pdb\protein_clean.pdb
+- D:\MGLTools\python.exe D:\MGLTools\Lib\site-packages\AutoDockTools\Utilities24\prepare_receptor4.py
+  -r protein_clean.pdb -o D:\PersonalFile\Documents\BigProject\SRC\project\pdbqt\protein.pdbqt
+  -A checkhydrogens -U nphs_lps -e seed=20231129
+- D:\MGLTools\python.exe D:\MGLTools\Lib\site-packages\AutoDockTools\Utilities24\prepare_ligand4.py
+  -l intermediate1.mol2 -o D:\PersonalFile\Documents\BigProject\SRC\project\wrapper\intermediate1.pdbqt
+  -A checkhydrogens
+- skip ligand parameterization (antechamber missing)
+- python D:\PersonalFile\Documents\BigProject\SRC\project\scripts\run_autodock_batch.py
+  --config D:\PersonalFile\Documents\BigProject\SRC\project\scripts\config.yml
+- python D:\PersonalFile\Documents\BigProject\SRC\project\scripts\build_complex.py
+  D:\PersonalFile\Documents\BigProject\SRC\project\pdb\protein_clean.pdb D:\PersonalFile\Documents\BigProject\SRC\project\autodock_runs\intermediate1.pdbqt
+  D:\PersonalFile\Documents\BigProject\SRC\project\autodock_runs\MAB_2301.pdbqt D:\PersonalFile\Documents\BigProject\SRC\project\autodock_runs\protein.pdbqt
+  -o D:\PersonalFile\Documents\BigProject\SRC\project\complex\complex_filtered.pdb
+- python D:\PersonalFile\Documents\BigProject\SRC\project\scripts\preprocess_pdb.py
+  D:\PersonalFile\Documents\BigProject\SRC\project\data\MAB_2301.pdb -o D:\PersonalFile\Documents\BigProject\SRC\project\pdb\protein_clean.pdb
+- D:\MGLTools\python.exe D:\MGLTools\Lib\site-packages\AutoDockTools\Utilities24\prepare_receptor4.py
+  -r protein_clean.pdb -o D:\PersonalFile\Documents\BigProject\SRC\project\pdbqt\protein.pdbqt
+  -A checkhydrogens -U nphs_lps -e seed=20231129
+- D:\MGLTools\python.exe D:\MGLTools\Lib\site-packages\AutoDockTools\Utilities24\prepare_ligand4.py
+  -l intermediate1.mol2 -o D:\PersonalFile\Documents\BigProject\SRC\project\wrapper\intermediate1.pdbqt
+  -A checkhydrogens
+- skip ligand parameterization (antechamber missing)
+- python D:\PersonalFile\Documents\BigProject\SRC\project\scripts\run_autodock_batch.py
+  --config D:\PersonalFile\Documents\BigProject\SRC\project\scripts\config.yml
+- python D:\PersonalFile\Documents\BigProject\SRC\project\scripts\build_complex.py
+  D:\PersonalFile\Documents\BigProject\SRC\project\pdb\protein_clean.pdb D:\PersonalFile\Documents\BigProject\SRC\project\autodock_runs\intermediate1.pdbqt
+  D:\PersonalFile\Documents\BigProject\SRC\project\autodock_runs\MAB_2301.pdbqt D:\PersonalFile\Documents\BigProject\SRC\project\autodock_runs\protein.pdbqt
+  -o D:\PersonalFile\Documents\BigProject\SRC\project\complex\complex_filtered.pdb
+- python D:\PersonalFile\Documents\BigProject\SRC\project\scripts\preprocess_pdb.py
+  D:\PersonalFile\Documents\BigProject\SRC\project\data\MAB_2301.pdb -o D:\PersonalFile\Documents\BigProject\SRC\project\pdb\protein_clean.pdb
+- D:\MGLTools\python.exe D:\MGLTools\Lib\site-packages\AutoDockTools\Utilities24\prepare_receptor4.py
+  -r protein_clean.pdb -o D:\PersonalFile\Documents\BigProject\SRC\project\pdbqt\protein.pdbqt
+  -A checkhydrogens -U nphs_lps -e seed=20231129
+- D:\MGLTools\python.exe D:\MGLTools\Lib\site-packages\AutoDockTools\Utilities24\prepare_ligand4.py
+  -l intermediate1.mol2 -o D:\PersonalFile\Documents\BigProject\SRC\project\wrapper\intermediate1.pdbqt
+  -A checkhydrogens
+- skip ligand parameterization (antechamber missing)
+- python D:\PersonalFile\Documents\BigProject\SRC\project\scripts\run_autodock_batch.py
+  --config D:\PersonalFile\Documents\BigProject\SRC\project\scripts\config.yml
+- python D:\PersonalFile\Documents\BigProject\SRC\project\scripts\build_complex.py
+  D:\PersonalFile\Documents\BigProject\SRC\project\pdb\protein_clean.pdb D:\PersonalFile\Documents\BigProject\SRC\project\autodock_runs\intermediate1.pdbqt
+  D:\PersonalFile\Documents\BigProject\SRC\project\autodock_runs\MAB_2301.pdbqt D:\PersonalFile\Documents\BigProject\SRC\project\autodock_runs\protein.pdbqt
+  -o D:\PersonalFile\Documents\BigProject\SRC\project\complex\complex_filtered.pdb
+- python D:\PersonalFile\Documents\BigProject\SRC\project\scripts\preprocess_pdb.py
+  D:\PersonalFile\Documents\BigProject\SRC\project\data\MAB_2301.pdb -o D:\PersonalFile\Documents\BigProject\SRC\project\pdb\protein_clean.pdb
+- D:\MGLTools\python.exe D:\MGLTools\Lib\site-packages\AutoDockTools\Utilities24\prepare_receptor4.py
+  -r protein_clean.pdb -o D:\PersonalFile\Documents\BigProject\SRC\project\pdbqt\protein.pdbqt
+  -A checkhydrogens -U nphs_lps -e seed=20231129
+- D:\MGLTools\python.exe D:\MGLTools\Lib\site-packages\AutoDockTools\Utilities24\prepare_ligand4.py
+  -l intermediate1.mol2 -o D:\PersonalFile\Documents\BigProject\SRC\project\wrapper\intermediate1.pdbqt
+  -A checkhydrogens
+- skip ligand parameterization per config
+- skip ligand parameterization per config
+- python D:\PersonalFile\Documents\BigProject\SRC\project\scripts\preprocess_pdb.py
+  D:\PersonalFile\Documents\BigProject\SRC\project\data\MAB_2301.pdb -o D:\PersonalFile\Documents\BigProject\SRC\project\pdb\protein_clean.pdb
+- D:\MGLTools\python.exe D:\MGLTools\Lib\site-packages\AutoDockTools\Utilities24\prepare_receptor4.py
+  -r protein_clean.pdb -o D:\PersonalFile\Documents\BigProject\SRC\project\pdbqt\protein.pdbqt
+  -A checkhydrogens -U nphs_lps -e seed=20231129
+- D:\MGLTools\python.exe D:\MGLTools\Lib\site-packages\AutoDockTools\Utilities24\prepare_ligand4.py
+  -l intermediate1.mol2 -o D:\PersonalFile\Documents\BigProject\SRC\project\wrapper\intermediate1.pdbqt
+  -A checkhydrogens
+- skip ligand parameterization per config
+- python D:\PersonalFile\Documents\BigProject\SRC\project\scripts\run_autodock_batch.py
+  --config D:\PersonalFile\Documents\BigProject\SRC\project\scripts\config.yml
+- python D:\PersonalFile\Documents\BigProject\SRC\project\scripts\build_complex.py
+  D:\PersonalFile\Documents\BigProject\SRC\project\pdb\protein_clean.pdb D:\PersonalFile\Documents\BigProject\SRC\project\autodock_runs\intermediate1.pdbqt
+  D:\PersonalFile\Documents\BigProject\SRC\project\autodock_runs\MAB_2301.pdbqt D:\PersonalFile\Documents\BigProject\SRC\project\autodock_runs\protein.pdbqt
+  -o D:\PersonalFile\Documents\BigProject\SRC\project\complex\complex_filtered.pdb
+- skip ligand parameterization per config
+- skip ligand parameterization per config
+- python D:\PersonalFile\Documents\BigProject\SRC\project\scripts\preprocess_pdb.py
+  D:\PersonalFile\Documents\BigProject\SRC\project\data\MAB_2301.pdb -o D:\PersonalFile\Documents\BigProject\SRC\project\pdb\protein_clean.pdb
+- D:\MGLTools\python.exe D:\MGLTools\Lib\site-packages\AutoDockTools\Utilities24\prepare_receptor4.py
+  -r protein_clean.pdb -o D:\PersonalFile\Documents\BigProject\SRC\project\pdbqt\protein.pdbqt
+  -A checkhydrogens -U nphs_lps -e seed=20231129
+- D:\MGLTools\python.exe D:\MGLTools\Lib\site-packages\AutoDockTools\Utilities24\prepare_ligand4.py
+  -l intermediate1.mol2 -o D:\PersonalFile\Documents\BigProject\SRC\project\wrapper\intermediate1.pdbqt
+  -A checkhydrogens
+- skip ligand parameterization per config
+- python D:\PersonalFile\Documents\BigProject\SRC\project\scripts\run_autodock_batch.py
+  --config D:\PersonalFile\Documents\BigProject\SRC\project\scripts\config.yml
+- python D:\PersonalFile\Documents\BigProject\SRC\project\scripts\build_complex.py
+  D:\PersonalFile\Documents\BigProject\SRC\project\pdb\protein_clean.pdb D:\PersonalFile\Documents\BigProject\SRC\project\autodock_runs\intermediate1.pdbqt
+  D:\PersonalFile\Documents\BigProject\SRC\project\autodock_runs\MAB_2301.pdbqt D:\PersonalFile\Documents\BigProject\SRC\project\autodock_runs\protein.pdbqt
+  -o D:\PersonalFile\Documents\BigProject\SRC\project\complex\complex_filtered.pdb
+- python D:\PersonalFile\Documents\BigProject\SRC\project\scripts\preprocess_pdb.py
+  D:\PersonalFile\Documents\BigProject\SRC\project\data\MAB_2301.pdb -o D:\PersonalFile\Documents\BigProject\SRC\project\pdb\protein_clean.pdb
+- D:\MGLTools\python.exe D:\MGLTools\Lib\site-packages\AutoDockTools\Utilities24\prepare_receptor4.py
+  -r protein_clean.pdb -o D:\PersonalFile\Documents\BigProject\SRC\project\pdbqt\protein.pdbqt
+  -A checkhydrogens -U nphs_lps -e seed=20231129
+- D:\MGLTools\python.exe D:\MGLTools\Lib\site-packages\AutoDockTools\Utilities24\prepare_ligand4.py
+  -l intermediate1.mol2 -o D:\PersonalFile\Documents\BigProject\SRC\project\wrapper\intermediate1.pdbqt
+  -A checkhydrogens
+- skip ligand parameterization per config
+- python D:\PersonalFile\Documents\BigProject\SRC\project\scripts\run_autodock_batch.py
+  --config D:\PersonalFile\Documents\BigProject\SRC\project\scripts\config.yml
+- python D:\PersonalFile\Documents\BigProject\SRC\project\scripts\build_complex.py
+  D:\PersonalFile\Documents\BigProject\SRC\project\pdb\protein_clean.pdb D:\PersonalFile\Documents\BigProject\SRC\project\autodock_runs\intermediate1.pdbqt
+  D:\PersonalFile\Documents\BigProject\SRC\project\autodock_runs\MAB_2301.pdbqt D:\PersonalFile\Documents\BigProject\SRC\project\autodock_runs\protein.pdbqt
+  -o D:\PersonalFile\Documents\BigProject\SRC\project\complex\complex_filtered.pdb
+- python D:\PersonalFile\Documents\BigProject\SRC\project\scripts\preprocess_pdb.py
+  D:\PersonalFile\Documents\BigProject\SRC\project\data\MAB_2301.pdb -o D:\PersonalFile\Documents\BigProject\SRC\project\pdb\protein_clean.pdb
+- D:\MGLTools\python.exe D:\MGLTools\Lib\site-packages\AutoDockTools\Utilities24\prepare_receptor4.py
+  -r protein_clean.pdb -o D:\PersonalFile\Documents\BigProject\SRC\project\pdbqt\protein.pdbqt
+  -A checkhydrogens -U nphs_lps -e seed=20231129
+- D:\MGLTools\python.exe D:\MGLTools\Lib\site-packages\AutoDockTools\Utilities24\prepare_ligand4.py
+  -l intermediate1.mol2 -o D:\PersonalFile\Documents\BigProject\SRC\project\wrapper\intermediate1.pdbqt
+  -A checkhydrogens
+- skip ligand parameterization per config
+- python D:\PersonalFile\Documents\BigProject\SRC\project\scripts\run_autodock_batch.py
+  --config D:\PersonalFile\Documents\BigProject\SRC\project\scripts\config.yml
+- python D:\PersonalFile\Documents\BigProject\SRC\project\scripts\build_complex.py
+  D:\PersonalFile\Documents\BigProject\SRC\project\pdb\protein_clean.pdb D:\PersonalFile\Documents\BigProject\SRC\project\autodock_runs\intermediate1.pdbqt
+  D:\PersonalFile\Documents\BigProject\SRC\project\autodock_runs\MAB_2301.pdbqt D:\PersonalFile\Documents\BigProject\SRC\project\autodock_runs\protein.pdbqt
+  -o D:\PersonalFile\Documents\BigProject\SRC\project\complex\complex_filtered.pdb
+- python D:\PersonalFile\Documents\BigProject\SRC\project\scripts\preprocess_pdb.py
+  D:\PersonalFile\Documents\BigProject\SRC\project\data\MAB_2301.pdb -o D:\PersonalFile\Documents\BigProject\SRC\project\pdb\protein_clean.pdb
+- D:\MGLTools\python.exe D:\MGLTools\Lib\site-packages\AutoDockTools\Utilities24\prepare_receptor4.py
+  -r protein_clean.pdb -o D:\PersonalFile\Documents\BigProject\SRC\project\pdbqt\protein.pdbqt
+  -A checkhydrogens -U nphs_lps -e seed=20231129
+- D:\MGLTools\python.exe D:\MGLTools\Lib\site-packages\AutoDockTools\Utilities24\prepare_ligand4.py
+  -l intermediate1.mol2 -o D:\PersonalFile\Documents\BigProject\SRC\project\wrapper\intermediate1.pdbqt
+  -A checkhydrogens
+- skip ligand parameterization per config
+- python D:\PersonalFile\Documents\BigProject\SRC\project\scripts\run_autodock_batch.py
+  --config D:\PersonalFile\Documents\BigProject\SRC\project\scripts\config.yml
+- python D:\PersonalFile\Documents\BigProject\SRC\project\scripts\build_complex.py
+  D:\PersonalFile\Documents\BigProject\SRC\project\pdb\protein_clean.pdb D:\PersonalFile\Documents\BigProject\SRC\project\autodock_runs\intermediate1.pdbqt
+  D:\PersonalFile\Documents\BigProject\SRC\project\autodock_runs\MAB_2301.pdbqt D:\PersonalFile\Documents\BigProject\SRC\project\autodock_runs\protein.pdbqt
+  -o D:\PersonalFile\Documents\BigProject\SRC\project\complex\complex_filtered.pdb
+- python D:\PersonalFile\Documents\BigProject\SRC\project\scripts\preprocess_pdb.py
+  D:\PersonalFile\Documents\BigProject\SRC\project\data\MAB_2301.pdb -o D:\PersonalFile\Documents\BigProject\SRC\project\pdb\protein_clean.pdb
+- D:\MGLTools\python.exe D:\MGLTools\Lib\site-packages\AutoDockTools\Utilities24\prepare_receptor4.py
+  -r protein_clean.pdb -o D:\PersonalFile\Documents\BigProject\SRC\project\pdbqt\protein.pdbqt
+  -A checkhydrogens -U nphs_lps -e seed=20231129
+- D:\MGLTools\python.exe D:\MGLTools\Lib\site-packages\AutoDockTools\Utilities24\prepare_ligand4.py
+  -l intermediate1.mol2 -o D:\PersonalFile\Documents\BigProject\SRC\project\wrapper\intermediate1.pdbqt
+  -A checkhydrogens
+- skip ligand parameterization per config
+- python D:\PersonalFile\Documents\BigProject\SRC\project\scripts\run_autodock_batch.py
+  --config D:\PersonalFile\Documents\BigProject\SRC\project\scripts\config.yml
+- python D:\PersonalFile\Documents\BigProject\SRC\project\scripts\build_complex.py
+  D:\PersonalFile\Documents\BigProject\SRC\project\pdb\protein_clean.pdb D:\PersonalFile\Documents\BigProject\SRC\project\autodock_runs\intermediate1.pdbqt
+  D:\PersonalFile\Documents\BigProject\SRC\project\autodock_runs\MAB_2301.pdbqt D:\PersonalFile\Documents\BigProject\SRC\project\autodock_runs\protein.pdbqt
+  -o D:\PersonalFile\Documents\BigProject\SRC\project\complex\complex_filtered.pdb
 random_seeds:
 - '20231129'
 - '20231129'
+- '20231129'
+- '20231129'
+- '20231129'
+- '20231129'
+- '101'
+- '202'
+- '303'
+- '404'
+- '505'
+- '20231129'
+- '101'
+- '202'
+- '303'
+- '404'
+- '505'
+- '20231129'
+- '101'
+- '202'
+- '303'
+- '404'
+- '505'
+- '20231129'
+- '101'
+- '202'
+- '303'
+- '404'
+- '505'
+- '20231129'
+- '101'
+- '202'
+- '303'
+- '404'
+- '505'
+- '20231129'
+- '101'
+- '202'
+- '303'
+- '404'
+- '505'
+- '20231129'
+- '101'
+- '202'
+- '303'
+- '404'
+- '505'
+- '20231129'
+- '101'
+- '202'
+- '303'
+- '404'
+- '505'
+- '20231129'
+- '101'
+- '202'
+- '303'
+- '404'
+- '505'
+- '20231129'
+- '101'
+- '202'
+- '303'
+- '404'
+- '505'
+- '20231129'
+- '101'
+- '202'
+- '303'
+- '404'
+- '505'
+- '20231129'
+- '20231129'
+- '101'
+- '202'
+- '303'
+- '404'
+- '505'
+- '20231129'
+- '101'
+- '202'
+- '303'
+- '404'
+- '505'
+- '20231129'
+- '101'
+- '202'
+- '303'
+- '404'
+- '505'
+- '20231129'
+- '101'
+- '202'
+- '303'
+- '404'
+- '505'
+- '20231129'
+- '101'
+- '202'
+- '303'
+- '404'
+- '505'
+- '20231129'
+- '101'
+- '202'
+- '303'
+- '404'
+- '505'
 inputs:
   protein_pdb: null
   ligand: null
   parameters: []
-  raw_protein: D:\PersonalFile\Documents\BigProject\SRC\project\data\MAB_1134c.pdb
+  raw_protein: D:\PersonalFile\Documents\BigProject\SRC\project\data\MAB_2301.pdb
 outputs:
   pdbqt: null
   docking_logs: []
@@ -38,7 +437,9 @@ outputs:
   md_traj: []
   cleaned_protein: D:\PersonalFile\Documents\BigProject\SRC\project\pdb\protein_clean.pdb
   receptor_pdbqt: D:\PersonalFile\Documents\BigProject\SRC\project\pdbqt\protein.pdbqt
-  ligand_pdbqt: D:\PersonalFile\Documents\BigProject\SRC\project\wrapper\MAB_2301.pdbqt
+  ligand_pdbqt: D:\PersonalFile\Documents\BigProject\SRC\project\wrapper\intermediate1.pdbqt
+  ligand_param_basename: (skipped)
+  complex_pdb: D:\PersonalFile\Documents\BigProject\SRC\project\complex\complex_filtered.pdb
 parameters:
   autogrid: {}
   autodock: {}

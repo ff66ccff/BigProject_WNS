@@ -59,6 +59,23 @@ def run_wsl(label: str, command: str, dry_run: bool) -> bool:
     return run_command(label, cmd, dry_run)
 
 
+def wsl_command_exists(cmd_name: str, conda_env: str | None = None) -> bool:
+    """Check whether a command exists in WSL PATH by invoking `which`.
+
+    Returns True if `which <cmd_name>` returns exit code 0.
+    If conda_env is provided, activate that environment first.
+    """
+    try:
+        if conda_env:
+            check_cmd = f"source ~/miniconda3/etc/profile.d/conda.sh && conda activate {conda_env} && which {cmd_name}"
+            result = subprocess.run(["wsl", "bash", "-c", check_cmd], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+        else:
+            result = subprocess.run(["wsl", "which", cmd_name], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+        return result.returncode == 0
+    except Exception:
+        return False
+
+
 def to_wsl_path(path: Path) -> str:
     path = path.resolve()
     if path.drive:
@@ -263,20 +280,48 @@ def main(argv: List[str] | None = None) -> None:
     ensure_exists(ligand_script, "ligand_param.sh script")
     make_parent(ligand_basename)
     wsl_root = to_wsl_path(working_dir)
+
+    amber_cfg = config.get("ambertools", {})
+    skip_amber = bool(amber_cfg.get("skip", False))
+    fail_on_missing = bool(amber_cfg.get("fail_on_missing", False))
+
     ligand_param_cmd = (
         f"cd {shlex.quote(wsl_root)} && "
         f"bash {shlex.quote(rel_to_workdir(ligand_script, working_dir))} "
         f"{shlex.quote(rel_to_workdir(raw_ligand, working_dir))} "
         f"{shlex.quote(rel_to_workdir(ligand_basename, working_dir))}"
     )
-    executed = run_wsl("Ligand parameterization", ligand_param_cmd, args.dry_run)
-    if executed:
+
+    if skip_amber:
+        print("[INFO] Skipping AmberTools ligand parameterization (config: ambertools.skip = true)")
         update_manifest(
             python_exe,
             manifest_path,
-            commands=[ligand_param_cmd],
-            outputs={"ligand_param_basename": str(ligand_basename)},
+            commands=["skip ligand parameterization per config"],
+            outputs={"ligand_param_basename": "(skipped)"},
         )
+    else:
+        # Detect presence of antechamber in WSL (check in amber conda env)
+        if not wsl_command_exists("antechamber", conda_env="amber"):
+            msg = "WSL 'antechamber' not found; ligand parameterization cannot run."
+            if fail_on_missing:
+                raise PipelineError(msg + " Set ambertools.skip=true to skip this step or install AmberTools in WSL.")
+            print("[WARN] " + msg + " Skipping this step. Install AmberTools to enable parameterization.")
+            update_manifest(
+                python_exe,
+                manifest_path,
+                commands=["skip ligand parameterization (antechamber missing)"],
+                outputs={"ligand_param_basename": "(skipped - antechamber missing)"},
+            )
+        else:
+            executed = run_wsl("Ligand parameterization", ligand_param_cmd, args.dry_run)
+            if executed:
+                update_manifest(
+                    python_exe,
+                    manifest_path,
+                    commands=[ligand_param_cmd],
+                    outputs={"ligand_param_basename": str(ligand_basename)},
+                )
 
     # Step 5: AutoGrid / AutoDock batch
     autodock_cmd = [
@@ -320,17 +365,26 @@ def main(argv: List[str] | None = None) -> None:
                 outputs={"complex_pdb": str(complex_output)},
             )
 
-    # Step 7: GROMACS pipeline (WSL)
-    gromacs_script = (working_dir / config["gromacs"]["pipeline_script"]).resolve()
-    ensure_exists(gromacs_script, "gromacs_pipeline.sh script")
+    # Step 7: GROMACS pipeline (WSL) - 完全自动化
+    gromacs_script = (working_dir / config["gromacs"].get("full_auto_script", "scripts/gromacs_full_auto.sh")).resolve()
+    if not gromacs_script.exists():
+        # 回退到旧脚本
+        gromacs_script = (working_dir / config["gromacs"]["pipeline_script"]).resolve()
+    ensure_exists(gromacs_script, "gromacs script")
+    
     gmx_workdir = (working_dir / config["gromacs"]["workdir"]).resolve()
+    mdp_dir = (working_dir / config["gromacs"].get("mdp_dir", "mdp")).resolve()
     make_parent(gmx_workdir / "placeholder")  # ensure directory exists
+    
+    # 构建完全自动化命令
     gmx_cmd = (
         f"cd {shlex.quote(wsl_root)} && "
         f"export GMX={shlex.quote(config['paths'].get('gmx', 'gmx'))} && "
         f"bash {shlex.quote(rel_to_workdir(gromacs_script, working_dir))} "
         f"{shlex.quote(rel_to_workdir(complex_output, working_dir))} "
-        f"{shlex.quote(rel_to_workdir(gmx_workdir, working_dir))}"
+        f"{shlex.quote(rel_to_workdir(raw_ligand, working_dir))} "
+        f"{shlex.quote(rel_to_workdir(gmx_workdir, working_dir))} "
+        f"{shlex.quote(rel_to_workdir(mdp_dir, working_dir))}"
     )
     executed = run_wsl("GROMACS pipeline", gmx_cmd, args.dry_run)
     if executed:

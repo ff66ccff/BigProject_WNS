@@ -46,17 +46,43 @@ def write_file(path: Path, content: str) -> None:
     path.write_text(content, encoding="utf-8")
 
 
-def build_command(executable: str, args: List[str]) -> List[str]:
-    if executable.startswith("/"):
+def wsl_command_exists(cmd_name: str) -> bool:
+    """Check whether a command exists in WSL PATH."""
+    try:
+        result = subprocess.run(
+            ["wsl", "which", cmd_name],
+            stdout=subprocess.DEVNULL,
+            stderr=subprocess.DEVNULL,
+        )
+        return result.returncode == 0
+    except Exception:
+        return False
+
+
+def windows_command_exists(cmd_name: str) -> bool:
+    """Check whether a command exists on Windows PATH."""
+    import shutil
+    return shutil.which(cmd_name) is not None
+
+
+def build_command(executable: str, args: List[str], use_wsl: bool = False) -> List[str]:
+    """Build command list, wrapping with wsl if needed.
+    
+    Args:
+        executable: The executable name or path.
+        args: Command arguments.
+        use_wsl: If True, force WSL execution.
+    """
+    if executable.startswith("/") or use_wsl:
         return ["wsl", executable, *args]
     return [executable, *args]
 
 
-def run_command(cmd: List[str], dry_run: bool) -> None:
+def run_command(cmd: List[str], dry_run: bool, cwd: Path | None = None) -> None:
     print(" ".join(cmd))
     if dry_run:
         return
-    result = subprocess.run(cmd, check=False)
+    result = subprocess.run(cmd, check=False, cwd=cwd)
     if result.returncode != 0:
         raise RuntimeError(f"Command '{cmd}' failed with exit code {result.returncode}")
 
@@ -76,6 +102,15 @@ def main(argv: List[str] | None = None) -> None:
     ligand_pdbqt = working_dir / config["inputs"]["ligand_pdbqt"]
     output_dir = working_dir / config["wrapper"]["output_dir"]
     output_dir.mkdir(parents=True, exist_ok=True)
+
+    # Copy receptor and ligand pdbqt to output_dir for AutoGrid/AutoDock
+    import shutil
+    receptor_in_output = output_dir / receptor_pdbqt.name
+    ligand_in_output = output_dir / ligand_pdbqt.name
+    if receptor_pdbqt.exists():
+        shutil.copy2(receptor_pdbqt, receptor_in_output)
+    if ligand_pdbqt.exists():
+        shutil.copy2(ligand_pdbqt, ligand_in_output)
 
     gpf_path = output_dir / "autogrid.gpf"
     gridfld = output_dir / "protein.maps.fld"
@@ -97,21 +132,30 @@ def main(argv: List[str] | None = None) -> None:
     write_file(gpf_path, gpf_content)
 
     autogrid_exe = config["paths"]["autogrid4"]
+    # Determine if we need WSL: command not on Windows but exists in WSL
+    use_wsl_autogrid = not windows_command_exists(autogrid_exe) and wsl_command_exists(autogrid_exe)
+    
+    # Use relative paths in the output directory
     autogrid_cmd = build_command(
         autogrid_exe,
         [
             "-p",
-            to_wsl_path(gpf_path) if autogrid_exe.startswith("/") else str(gpf_path),
+            gpf_path.name,
             "-l",
-            to_wsl_path(output_dir / "autogrid.log")
-            if autogrid_exe.startswith("/")
-            else str(output_dir / "autogrid.log"),
+            "autogrid.log",
         ],
+        use_wsl=use_wsl_autogrid,
     )
-    run_command(autogrid_cmd, args.dry_run)
+    # Run autogrid in output_dir (need to cd first for WSL)
+    if use_wsl_autogrid:
+        wsl_output_dir = to_wsl_path(output_dir)
+        autogrid_cmd = ["wsl", "bash", "-c", f"cd {wsl_output_dir} && {autogrid_exe} -p {gpf_path.name} -l autogrid.log"]
+    run_command(autogrid_cmd, args.dry_run, cwd=output_dir if not use_wsl_autogrid else None)
 
     dpf_template = template_dir / "dpf_template.txt"
     autodock_exe = config["paths"]["autodock4"]
+    # Determine if we need WSL for autodock
+    use_wsl_autodock = not windows_command_exists(autodock_exe) and wsl_command_exists(autodock_exe)
 
     for seed in config["wrapper"]["seeds"]:
         maps = " ".join([
@@ -123,6 +167,7 @@ def main(argv: List[str] | None = None) -> None:
             "gridfld": gridfld.name,
             "maps": maps,
             "ligand_pdbqt": ligand_pdbqt.name,
+            "receptor": receptor_pdbqt.stem,
             "center_x": str(config["autogrid"]["center"][0]),
             "center_y": str(config["autogrid"]["center"][1]),
             "center_z": str(config["autogrid"]["center"][2]),
@@ -132,16 +177,17 @@ def main(argv: List[str] | None = None) -> None:
         write_file(dpf_path, dpf_content)
         dlg_path = output_dir / f"wrapper_{seed}.dlg"
 
-        cmd = build_command(
-            autodock_exe,
-            [
-                "-p",
-                to_wsl_path(dpf_path) if autodock_exe.startswith("/") else str(dpf_path),
-                "-l",
-                to_wsl_path(dlg_path) if autodock_exe.startswith("/") else str(dlg_path),
-            ],
-        )
-        run_command(cmd, args.dry_run)
+        # Run autodock in output_dir
+        if use_wsl_autodock:
+            wsl_output_dir = to_wsl_path(output_dir)
+            cmd = ["wsl", "bash", "-c", f"cd {wsl_output_dir} && {autodock_exe} -p {dpf_path.name} -l {dlg_path.name}"]
+        else:
+            cmd = build_command(
+                autodock_exe,
+                ["-p", dpf_path.name, "-l", dlg_path.name],
+                use_wsl=False,
+            )
+        run_command(cmd, args.dry_run, cwd=output_dir if not use_wsl_autodock else None)
 
 
 if __name__ == "__main__":

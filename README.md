@@ -110,6 +110,10 @@ D:\Python\python.exe scripts\run_full_pipeline.py
 - 工具：AmberTools antechamber + ACPYPE
 - 功能：生成 GAFF 力场参数
 - 注意：若 AmberTools 未安装，此步会报错但不影响对接
+ - 配置与可选行为：
+   - `config.yml` 中 `ambertools.skip`（布尔，默认 `false`）可以设置为 `true` 来跳过此步骤。
+   - 如果你希望在缺少 `antechamber` 时终止整个流程，可以将 `ambertools.fail_on_missing` 设置为 `true`（默认 `false`）。
+   - 脚本在执行前会检测 WSL 中是否存在 `antechamber`，若不存在且 `skip` 为 `false`，默认会打印警告并跳过该步骤（不终止流程）。
 
 ### Step 5: AutoGrid/AutoDock 批量对接
 - 脚本：`run_autodock_batch.py`
@@ -122,9 +126,49 @@ D:\Python\python.exe scripts\run_full_pipeline.py
 - 输出：`complex/complex_filtered.pdb`
 
 ### Step 7: GROMACS 分子动力学
-- 脚本：`gromacs_pipeline.sh`（在 WSL 中执行）
-- 流程：pdb2gmx → solvate → genion → em → nvt → npt → md
+- 脚本：`gromacs_full_auto.sh` v2.1（在 WSL 中执行）**【全自动化脚本 - 已修复】**
+- 流程：提取蛋白/配体 → ACPYPE 参数化 → pdb2gmx → 组装 → 盒子 → 溶剂化 → 离子 → 拓扑验证 → EM → NVT → NPT → MD
+- 特点：
+  - **完全自动化**，无需手动输入任何参数
+  - 自动检测已有的配体参数文件（跳过重复计算）
+  - 自动处理力场选择、水模型、温度耦合组等
+  - 自动创建索引组 (`Protein_UNL`, `Water_and_ions`)
+  - **v2.1 修复**：
+    - 🔧 修复重复运行导致的拓扑文件累积问题
+    - 🔧 在溶剂化前自动重建干净的 `[ molecules ]` 部分
+    - 🔧 离子添加后自动验证并修复拓扑一致性
+    - 🔧 支持 `Protein_UNL`/`Protein_LIG` 等多种组名
+    - 🔧 添加自动清理旧中间文件功能
+  - 彩色日志输出，便于追踪进度
+- 技术路线对应：
+  - Amber ff + TIP3P（根据技术路线第5节）
+  - Steepest Descent, Fmax < 1000（根据技术路线第6节）
+  - v-rescale + Parrinello-Rahman（根据技术路线第6节）
+  - 轨迹采样 2 ps（根据技术路线第6节）
 - 输出：`gmx/` 目录下的轨迹和拓扑文件
+- 使用方法：
+  ```bash
+  cd /mnt/d/PersonalFile/Documents/BigProject/SRC/project
+  bash scripts/gromacs_full_auto.sh complex/complex_filtered.pdb data/intermediate1.mol2 gmx mdp
+  ```
+- 环境变量：
+  - `CLEAN_OLD=0`：禁用自动清理旧文件（默认启用）
+  - `NTMPI=1`：MPI 线程数
+  - `NTOMP=8`：OpenMP 线程数
+
+### Step 8: MD 后处理分析
+- 脚本：`post_analysis.sh`（在 WSL 中执行）**【新增】**
+- 功能（根据技术路线第7节）：
+  - 配体占有率密度图 (Occupancy Map)
+  - 接触频率统计 (Contact Frequency)
+  - 停留时间 (Residence Time)
+  - 构象簇分析 (Clustering)
+  - RMSD/RMSF 分析
+  - 氢键分析
+- 使用方法：
+  ```bash
+  bash scripts/post_analysis.sh gmx
+  ```
 
 ---
 
@@ -189,15 +233,46 @@ D:\Python\python.exe scripts\package_results.py
 
 ## 脚本速查表
 
-| 脚本                    | 用途              | 运行环境      |
-| ----------------------- | ----------------- | ------------- |
-| `run_full_pipeline.py`  | 一键自动化        | Windows       |
-| `preprocess_pdb.py`     | PDB 清洗          | Windows       |
-| `run_autodock_batch.py` | AutoDock 批量对接 | Windows → WSL |
-| `build_complex.py`      | 复合体构建        | Windows       |
-| `ligand_param.sh`       | 配体参数化        | WSL           |
-| `gromacs_pipeline.sh`   | MD 模拟           | WSL           |
-| `post_md_analysis.py`   | MD 后处理         | Windows/WSL   |
-| `cluster.sh`            | 轨迹聚类          | WSL           |
-| `update_manifest.py`    | 更新 manifest     | Windows       |
-| `package_results.py`    | 归档打包          | Windows       |
+| 脚本                     | 用途                 | 运行环境      |
+| ------------------------ | -------------------- | ------------- |
+| `run_full_pipeline.py`   | 一键自动化           | Windows       |
+| `preprocess_pdb.py`      | PDB 清洗             | Windows       |
+| `run_autodock_batch.py`  | AutoDock 批量对接    | Windows → WSL |
+| `build_complex.py`       | 复合体构建           | Windows       |
+| `ligand_param.sh`        | 配体参数化           | WSL           |
+| `gromacs_pipeline.sh`    | MD 模拟（旧版）      | WSL           |
+| `gromacs_full_auto.sh`   | **MD 全自动化 v2.0** | WSL           |
+| `continue_simulation.sh` | 从中断点继续 MD      | WSL           |
+| `post_analysis.sh`       | **MD 后处理分析**    | WSL           |
+| `post_md_analysis.py`    | MD 后处理 (Python)   | Windows/WSL   |
+| `cluster.sh`             | 轨迹聚类             | WSL           |
+| `update_manifest.py`     | 更新 manifest        | Windows       |
+| `package_results.py`     | 归档打包             | Windows       |
+
+---
+
+## 技术路线对应
+
+本项目严格按照技术路线文档实现：
+
+| 技术路线步骤      | 脚本/工具                   | 关键参数                |
+| ----------------- | --------------------------- | ----------------------- |
+| 1. 蛋白质结构准备 | `preprocess_pdb.py`         | 格式标准化              |
+| 2. PDB→PDBQT 转换 | MGLTools                    | Gasteiger 电荷          |
+| 3. Wrapper (Sc2)  | AutoDock                    | ε=1×10⁻⁴, R≈3.6Å        |
+| 4. 复合体构建     | `build_complex.py` + ACPYPE | GAFF2 力场              |
+| 5. 体系构建       | GROMACS                     | Amber ff, TIP3P, 1.0nm  |
+| 6. MD 模拟        | GROMACS                     | v-rescale, P-R, 2ps采样 |
+| 7. 后处理分析     | `post_analysis.sh`          | 占有率/接触/聚类        |
+
+### MDP 参数配置
+
+| 参数       | 设置值            | 说明          |
+| ---------- | ----------------- | ------------- |
+| 力场       | amber99sb-ildn    | Amber ff 系列 |
+| 水模型     | TIP3P             | 与 Amber 兼容 |
+| 静电       | PME               | 长程静电处理  |
+| 能量最小化 | Steepest Descent  | Fmax < 1000   |
+| 温控器     | v-rescale         | 300 K         |
+| 压控器     | Parrinello-Rahman | 1 bar         |
+| 轨迹采样   | 1000 步 = 2 ps    | 根据技术路线  |
