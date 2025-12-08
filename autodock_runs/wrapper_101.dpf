@@ -1,0 +1,16 @@
+autodock_parameter_version 4.2
+outlev 1
+intelec
+seed 101
+ligand_types A C N NA OA
+fld protein.maps.fld
+map A.map
+map C.map
+map N.map
+map NA.map
+map OA.map
+move intermediate1_3d.pdbqt
+about 0.0 0.0 0.0
+tran0 0.0 0.0 0.0
+quaternion0 0 0 0 1
+analysis

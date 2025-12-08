@@ -1,0 +1,13 @@
+npts 60 60 60
+gridfld protein.maps.fld
+receptor protein.pdbqt
+gridcenter 0.0 0.0 0.0
+spacing 0.375
+ligand_types A C N NA OA
+map A.map
+map C.map
+map N.map
+map NA.map
+map OA.map
+elecmap e.map
+dsolvmap d.map

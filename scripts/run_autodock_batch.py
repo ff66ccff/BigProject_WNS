@@ -115,6 +115,12 @@ def main(argv: List[str] | None = None) -> None:
     gpf_path = output_dir / "autogrid.gpf"
     gridfld = output_dir / "protein.maps.fld"
 
+    # Generate map definitions for each ligand type
+    ligand_types = config["inputs"]["ligand_types"].split()
+    map_definitions = []
+    for ligand_type in ligand_types:
+        map_definitions.append(f"map {ligand_type}.map")
+    
     gpf_mapping = {
         "npts_x": str(config["autogrid"]["npts"][0]),
         "npts_y": str(config["autogrid"]["npts"][1]),
@@ -126,6 +132,7 @@ def main(argv: List[str] | None = None) -> None:
         "center_z": str(config["autogrid"]["center"][2]),
         "spacing": str(config["autogrid"]["spacing"]),
         "ligand_types": config["inputs"]["ligand_types"],
+        "map_definitions": "\n".join(map_definitions),
     }
 
     gpf_content = render_template(template_dir / "gpf_template.txt", gpf_mapping)
@@ -158,14 +165,14 @@ def main(argv: List[str] | None = None) -> None:
     use_wsl_autodock = not windows_command_exists(autodock_exe) and wsl_command_exists(autodock_exe)
 
     for seed in config["wrapper"]["seeds"]:
-        maps = " ".join([
-            f"{ligand_type}.map" for ligand_type in config["inputs"]["ligand_types"].split()
+        map_definitions = "\n".join([
+            f"map {ligand_type}.map" for ligand_type in config["inputs"]["ligand_types"].split()
         ])
         mapping = {
             "seed": str(seed),
             "ligand_types": config["inputs"]["ligand_types"],
             "gridfld": gridfld.name,
-            "maps": maps,
+            "maps": map_definitions,
             "ligand_pdbqt": ligand_pdbqt.name,
             "receptor": receptor_pdbqt.stem,
             "center_x": str(config["autogrid"]["center"][0]),

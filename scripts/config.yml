@@ -7,13 +7,13 @@ paths:
   gmx: "gmx"
 
 inputs:
-  raw_protein_pdb: "data/MAB_2301.pdb"
+  raw_protein_pdb: "data/MAB_1134c.pdb"
   cleaned_protein_pdb: "pdb/protein_clean.pdb"
   receptor_pdbqt: "pdbqt/protein.pdbqt"
-  raw_ligand_mol2: "data/intermediate1.mol2"
-  ligand_pdbqt: "wrapper/intermediate1.pdbqt"
-  ligand_basename: "wrapper/intermediate1"
-  ligand_types: "A C HD N OA"
+  raw_ligand_mol2: "data/intermediate1_3d.mol2"
+  ligand_pdbqt: "wrapper/intermediate1_3d.pdbqt"
+  ligand_basename: "wrapper/intermediate1_3d"
+  ligand_types: "A C N NA OA"
   complex_output_pdb: "complex/complex_filtered.pdb"
   pose_files:
     - "autodock_runs/*.pdbqt"

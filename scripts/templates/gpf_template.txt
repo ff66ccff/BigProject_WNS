@@ -1,7 +1,9 @@
 npts ${npts_x} ${npts_y} ${npts_z}
 gridfld ${gridfld}
-definition ${receptor}
+receptor ${receptor}
 gridcenter ${center_x} ${center_y} ${center_z}
 spacing ${spacing}
-atompdbqt ${receptor}
-automap ${ligand_types}
+ligand_types ${ligand_types}
+${map_definitions}
+elecmap e.map
+dsolvmap d.map

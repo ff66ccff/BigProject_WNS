@@ -5,8 +5,8 @@ param (
     [int]$Seed = 20231129
 )
 
-$prepareScript = Join-Path $MGLToolsRoot "MGLTools-1.5.7\Lib\site-packages\AutoDockTools\Utilities24\prepare_receptor4.py"
-$pythonExe = Join-Path $MGLToolsRoot "MGLTools-1.5.7\mglpython.exe"
+$prepareScript = Join-Path $MGLToolsRoot "Lib\site-packages\AutoDockTools\Utilities24\prepare_receptor4.py"
+$pythonExe = Join-Path $MGLToolsRoot "python.exe"
 
 if (-not (Test-Path $pythonExe)) {
     throw "Unable to find mglpython.exe at $pythonExe. Adjust the MGLToolsRoot parameter."
