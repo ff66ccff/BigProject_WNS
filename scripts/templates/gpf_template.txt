@@ -3,7 +3,9 @@ gridfld ${gridfld}
 receptor ${receptor}
 gridcenter ${center_x} ${center_y} ${center_z}
 spacing ${spacing}
-ligand_types ${ligand_types}
+ligand_types ${ligand_types} X
 ${map_definitions}
+# X atom parameters for Sc2 (short-range repulsion)
+parameter_file X 0.0001 3.6 0.0 0.0
 elecmap e.map
 dsolvmap d.map

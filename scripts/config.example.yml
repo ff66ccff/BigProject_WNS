@@ -49,5 +49,12 @@ gromacs:
   pipeline_script: "scripts/gromacs_pipeline.sh"
   workdir: "gmx"
 
+# Wrap 'n' Shake specific parameters
+shaker:
+  n_cycles: 5                    # Number of washing cycles
+  displacement_cutoff: 6.0       # Displacement threshold in Angstroms
+  cycle_time: 1.0               # MD simulation time per cycle in nanoseconds
+  ligand_resname: "LIG"         # Ligand residue name in topology
+
 manifest:
   path: "manifest/run-manifest.yml"
