@@ -1,6 +1,6 @@
 # 项目使用指南
 
-本目录实现了基于论文 "Sc2" 方法的 AutoDock 对接与 GROMACS 分子动力学模拟的完整自动化流程。建议阅读下方说明后再运行脚本，以确保与本地环境一致。
+本目录实现了基于论文 "Wrap 'n' Shake (WnS)" 方法的完整自动化流程，包括重构后的Wrapper覆盖策略、Shaker模拟协议、Washing过滤机制和幸存者评估指标。建议阅读下方说明后再运行脚本，以确保与本地环境一致。
 
 ---
 
@@ -115,60 +115,66 @@ D:\Python\python.exe scripts\run_full_pipeline.py
    - 如果你希望在缺少 `antechamber` 时终止整个流程，可以将 `ambertools.fail_on_missing` 设置为 `true`（默认 `false`）。
    - 脚本在执行前会检测 WSL 中是否存在 `antechamber`，若不存在且 `skip` 为 `false`，默认会打印警告并跳过该步骤（不终止流程）。
 
-### Step 5: AutoGrid/AutoDock 批量对接
-- 脚本：`run_autodock_batch.py`
-- 功能：生成网格、执行多 seed 对接
-- 输出：`autodock_runs/wrapper_<seed>.dlg`
+### Step 5: Wrapper（重构后的串行迭代屏蔽对接）
+- 脚本：`run_autodock_batch.py`（已重构为串行迭代模式）
+- 功能：实现论文要求的"单分子层"覆盖策略
+- 核心修改：
+  - **串行迭代对接**：从"并行独立对接"改为"串行迭代屏蔽对接"
+  - **屏蔽机制**：识别已对接配体周围3.5Å范围内的蛋白原子，将其原子类型强制改为"X"
+  - **原子"X"参数**：电荷q=0，Lennard-Jones参数ε=10⁻⁴ kcal/mol, Rmin≈3.6Å
+  - **终止条件**：当蛋白表面覆盖率达到饱和（剩余空白表面积<1%）时停止
+- 输出：`autodock_runs/wrapper_<seed>.dlg`，`wrapper/monolayer.pdbqt`
 
 ### Step 6: 构建复合体
 - 脚本：`build_complex.py`
 - 功能：合并蛋白与最佳配体 pose，过滤原子冲突
 - 输出：`complex/complex_filtered.pdb`
 
-### Step 7: GROMACS 分子动力学
-- 脚本：`gromacs_full_auto.sh` v2.1（在 WSL 中执行）**【全自动化脚本 - 已修复】**
-- 流程：提取蛋白/配体 → ACPYPE 参数化 → pdb2gmx → 组装 → 盒子 → 溶剂化 → 离子 → 拓扑验证 → EM → NVT → NPT → MD
-- 特点：
-  - **完全自动化**，无需手动输入任何参数
-  - 自动检测已有的配体参数文件（跳过重复计算）
-  - 自动处理力场选择、水模型、温度耦合组等
-  - 自动创建索引组 (`Protein_UNL`, `Water_and_ions`)
-  - **v2.1 修复**：
-    - 🔧 修复重复运行导致的拓扑文件累积问题
-    - 🔧 在溶剂化前自动重建干净的 `[ molecules ]` 部分
-    - 🔧 离子添加后自动验证并修复拓扑一致性
-    - 🔧 支持 `Protein_UNL`/`Protein_LIG` 等多种组名
-    - 🔧 添加自动清理旧中间文件功能
-  - 彩色日志输出，便于追踪进度
-- 技术路线对应：
-  - Amber ff + TIP3P（根据技术路线第5节）
-  - Steepest Descent, Fmax < 1000（根据技术路线第6节）
-  - v-rescale + Parrinello-Rahman（根据技术路线第6节）
-  - 轨迹采样 2 ps（根据技术路线第6节）
-- 输出：`gmx/` 目录下的轨迹和拓扑文件
+### Step 7: Shaker（重构后的受限模拟退火协议）
+- 脚本：`gromacs_full_auto.sh` v3.0（在 WSL 中执行）**【重构为WnS协议】**
+- 流程：提取蛋白/配体 → ACPYPE 参数化 → pdb2gmx → 组装 → 盒子 → 溶剂化 → 离子 → 拓扑验证 → EM → **MDB（初筛MD）** → **MDBSA（模拟退火MD）** → **Washing（清洗）** → **MDF（全柔性精修）**
+- 核心修改：
+  - **初筛MD (MDB)**：短时间（5ns）MD，对蛋白主链施加位置限制，仅允许侧链和配体移动
+  - **模拟退火MD (MDBSA)**：
+    - 保留蛋白主链的位置限制（防止高温下蛋白解折叠）
+    - 锯齿状温度变化协议：
+      - 小分子 (MW ≤ 300)：升温至 323 K (50°C)
+      - 大分子 (MW ≥ 300)：升温至 353 K (80°C)
+    - 利用高温加速弱结合配体的解离
+  - **Washing（清洗）**：
+    - 在每一轮Shaker模拟结束后分析轨迹
+    - 判定标准：配体质心移动超过6Å或相互作用能变弱
+    - 清洗动作：从系统中删除已解离的配体
+    - 循环直至约75%的配体被移除
+  - **全柔性精修 (MDF)**：对幸存配体解除限制，进行无约束、300K的常规MD精修
+- 输出：`gmx/` 目录下的轨迹和拓扑文件，`md/survivors.pdb`
 - 使用方法：
   ```bash
   cd /mnt/d/PersonalFile/Documents/BigProject/SRC/project
-  bash scripts/gromacs_full_auto.sh complex/complex_filtered.pdb data/intermediate1.mol2 gmx mdp
+  bash scripts/gromacs_full_auto.sh wrapper/monolayer.pdbqt data/ligand.mol2 gmx mdp
   ```
 - 环境变量：
   - `CLEAN_OLD=0`：禁用自动清理旧文件（默认启用）
   - `NTMPI=1`：MPI 线程数
   - `NTOMP=8`：OpenMP 线程数
+  - `SHAKER_TEMP=323`：小分子温度（默认323K）
+  - `SHAKER_TEMP_LARGE=353`：大分子温度（默认353K）
+  - `WASHING_THRESHOLD=6.0`：清洗距离阈值（默认6.0Å）
+  - `SURVIVAL_RATE=0.25`：幸存率阈值（默认25%）
 
-### Step 8: MD 后处理分析
-- 脚本：`post_analysis.sh`（在 WSL 中执行）**【新增】**
-- 功能（根据技术路线第7节）：
-  - 配体占有率密度图 (Occupancy Map)
-  - 接触频率统计 (Contact Frequency)
-  - 停留时间 (Residence Time)
-  - 构象簇分析 (Clustering)
-  - RMSD/RMSF 分析
-  - 氢键分析
+### Step 8: 幸存者分析与结合位点评估
+- 脚本：`post_analysis.sh`（在 WSL 中执行）**【重构为幸存者评估】**
+- 功能（根据WnS方法第7节）：
+  - **Shaker Rate (SR)**：计算公式 SR = N_initial/N_final，SR值越高说明非特异性位点去除得越干净
+  - **幸存者排序**：根据最终幸存配体与蛋白的相互作用能（Interaction Energy）进行排序
+  - **聚类分析**：对幸存下来的配体位置进行RMSD聚类，簇中心即为预测的结合位点
+  - **结合位点可视化**：生成幸存配体的占有率密度图和结合位点预测
+  - **能量分析**：计算幸存配体的结合自由能和相互作用能分解
 - 使用方法：
   ```bash
   bash scripts/post_analysis.sh gmx
   ```
+- 输出：`analysis/` 目录下的幸存者分析结果、结合位点预测和可视化图表
 
 ---
 
@@ -251,28 +257,78 @@ D:\Python\python.exe scripts\package_results.py
 
 ---
 
-## 技术路线对应
+## 修改后的技术路线图
 
-本项目严格按照技术路线文档实现：
+本项目实现了重构后的Wrap 'n' Shake (WnS)技术路线：
 
-| 技术路线步骤      | 脚本/工具                   | 关键参数                |
-| ----------------- | --------------------------- | ----------------------- |
-| 1. 蛋白质结构准备 | `preprocess_pdb.py`         | 格式标准化              |
-| 2. PDB→PDBQT 转换 | MGLTools                    | Gasteiger 电荷          |
-| 3. Wrapper (Sc2)  | AutoDock                    | ε=1×10⁻⁴, R≈3.6Å        |
-| 4. 复合体构建     | `build_complex.py` + ACPYPE | GAFF2 力场              |
-| 5. 体系构建       | GROMACS                     | Amber ff, TIP3P, 1.0nm  |
-| 6. MD 模拟        | GROMACS                     | v-rescale, P-R, 2ps采样 |
-| 7. 后处理分析     | `post_analysis.sh`          | 占有率/接触/聚类        |
+| 技术路线步骤       | 脚本/工具                   | 关键参数/修改点               |
+| ------------------ | --------------------------- | ----------------------------- |
+| 1. 蛋白质结构准备  | `preprocess_pdb.py`         | 格式标准化                    |
+| 2. PDB→PDBQT 转换  | MGLTools                    | Gasteiger 电荷                |
+| 3. Wrapper（重构） | `run_autodock_batch.py`     | 串行迭代屏蔽对接，原子"X"参数 |
+| 4. 复合体构建      | `build_complex.py` + ACPYPE | GAFF2 力场                    |
+| 5. 体系构建        | GROMACS                     | Amber ff, TIP3P, 1.0nm        |
+| 6. Shaker（重构）  | `gromacs_full_auto.sh`      | 受限模拟退火+Washing机制      |
+| 7. 幸存者分析      | `post_analysis.sh`          | Shaker Rate+幸存者聚类        |
 
-### MDP 参数配置
+### 核心修改点总结
 
-| 参数       | 设置值            | 说明          |
-| ---------- | ----------------- | ------------- |
-| 力场       | amber99sb-ildn    | Amber ff 系列 |
-| 水模型     | TIP3P             | 与 Amber 兼容 |
-| 静电       | PME               | 长程静电处理  |
-| 能量最小化 | Steepest Descent  | Fmax < 1000   |
-| 温控器     | v-rescale         | 300 K         |
-| 压控器     | Parrinello-Rahman | 1 bar         |
-| 轨迹采样   | 1000 步 = 2 ps    | 根据技术路线  |
+**修改点一：重构 Wrapper 覆盖策略**
+- 从"并行独立对接"改为"串行迭代屏蔽对接"
+- 实现蛋白原子类型"X"的动态修改和屏蔽机制
+- 确保形成真正的"单分子层"覆盖
+
+**修改点二：重构 Shaker 模拟协议**
+- 从"常规全柔性MD"改为"受限模拟退火"
+- 实现三阶段MD：初筛MD→模拟退火MD→全柔性精修
+- 根据分子量设定不同的温度协议
+
+**修改点三：增加 Washing 过滤机制**
+- 在Shaker模拟过程中实时分析配体状态
+- 自动删除解离的配体，防止干扰后续模拟
+- 实现约75%配体移除的终止条件
+
+**修改点四：调整评估指标**
+- 从"占有率密度图"改为"幸存者"评估
+- 引入Shaker Rate (SR)指标量化非特异性位点去除效果
+- 基于幸存配体的聚类预测结合位点
+
+### MDP 参数配置（重构后的WnS协议）
+
+| 参数           | 设置值              | 说明          |
+| -------------- | ------------------- | ------------- |
+| 力场           | amber99sb-ildn      | Amber ff 系列 |
+| 水模型         | TIP3P               | 与 Amber 兼容 |
+| 静电           | PME                 | 长程静电处理  |
+| 能量最小化     | Steepest Descent    | Fmax < 1000   |
+| 初筛MD温控器   | v-rescale           | 300 K         |
+| 模拟退火温控器 | v-rescale           | 323-353 K     |
+| 压控器         | Parrinello-Rahman   | 1 bar         |
+| 轨迹采样       | 1000 步 = 2 ps      | 根据技术路线  |
+| 位置限制       | Position Restraints | 蛋白主链限制  |
+
+### 新增配置参数（config.yml）
+
+```yaml
+shaker:
+  # 模拟退火参数
+  small_mol_temp: 323      # 小分子温度 (K)
+  large_mol_temp: 353      # 大分子温度 (K)
+  mol_weight_threshold: 300 # 分子量阈值 (Da)
+  
+  # Washing参数
+  washing_threshold: 6.0   # 配体移动距离阈值 (Å)
+  survival_rate: 0.25      # 幸存率阈值
+  
+  # MD时间设置
+  pre_md_time: 5           # 初筛MD时间 (ns)
+  annealing_cycles: 5      # 模拟退火循环数
+  final_md_time: 10        # 最终精修MD时间 (ns)
+
+wrapper:
+  # 屏蔽对接参数
+  masking_radius: 3.5      # 屏蔽半径 (Å)
+  x_atom_epsilon: 1e-4     # X原子LJ参数ε
+  x_atom_rmin: 3.6         # X原子LJ参数Rmin (Å)
+  coverage_threshold: 0.99 # 覆盖率阈值
+```
