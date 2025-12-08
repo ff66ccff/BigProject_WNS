@@ -154,17 +154,24 @@ def update_topology_file(topol_file: Path, ligand_resname: str,
         raise ValueError(f"Could not find [ molecules ] section in {topol_file}")
     
     # Update ligand count
+    ligand_count_updated = False
     for i in range(molecules_start, len(lines)):
-        if ligand_resname in lines[i]:
+        if ligand_resname in lines[i] and not lines[i].strip().startswith(';'):
             parts = lines[i].split()
             if len(parts) >= 2:
-                original_count = int(parts[1])
-                new_count = original_count - len(removed_residues)
-                if new_count < 0:
-                    new_count = 0
-                parts[1] = str(new_count)
-                lines[i] = ' '.join(parts)
-                break
+                try:
+                    original_count = int(parts[1])
+                    new_count = max(0, original_count - len(removed_residues))
+                    parts[1] = str(new_count)
+                    lines[i] = ' '.join(parts)
+                    ligand_count_updated = True
+                    print(f"Updated ligand count: {original_count} -> {new_count}")
+                    break
+                except ValueError:
+                    continue
+    
+    if not ligand_count_updated:
+        raise ValueError(f"Could not find ligand {ligand_resname} in molecules section")
     
     # Write updated topology
     topol_file.write_text('\n'.join(lines) + '\n', encoding='utf-8')
@@ -191,6 +198,64 @@ def run_gromacs_command(gmx_exe: str, args: List[str], cwd: Path,
     return result.stdout
 
 
+def regenerate_index_files(work_dir: Path, gmx_exe: str, gro_file: str = "npt.gro") -> None:
+    """Regenerate GROMACS index files to prevent index mismatch."""
+    print("Regenerating index files...")
+    
+    # Create new index file
+    run_gromacs_command(
+        gmx_exe,
+        ["make_ndx", "-f", gro_file, "-o", "index.ndx"],
+        work_dir,
+        input_text="q\n"  # Quit after creating default groups
+    )
+    
+    print("Index files regenerated")
+
+
+def validate_annealing_mdp(mdp_file: Path, cycle_time: float) -> None:
+    """Validate that annealing.mdp parameters are consistent with cycle time."""
+    if not mdp_file.exists():
+        raise FileNotFoundError(f"Annealing MDP file not found: {mdp_file}")
+    
+    content = mdp_file.read_text(encoding='utf-8')
+    
+    # Extract nsteps and dt
+    nsteps_match = re.search(r'nsteps\s*=\s*(\d+)', content)
+    dt_match = re.search(r'dt\s*=\s*([\d.]+)', content)
+    
+    if not nsteps_match or not dt_match:
+        raise ValueError("Could not find nsteps or dt in annealing.mdp")
+    
+    nsteps = int(nsteps_match.group(1))
+    dt = float(dt_match.group(1))
+    
+    # Calculate total simulation time in ps
+    total_time_ps = nsteps * dt * 1000  # dt is in ps, so multiply by 1000 for ps
+    
+    # Extract annealing time points
+    annealing_time_match = re.search(r'annealing-time\s*=\s*([\d\s.]+)', content)
+    if not annealing_time_match:
+        raise ValueError("Could not find annealing-time in annealing.mdp")
+    
+    annealing_times = [float(t) for t in annealing_time_match.group(1).split()]
+    max_annealing_time = max(annealing_times)
+    
+    # Check if annealing time covers the full simulation
+    if max_annealing_time > total_time_ps:
+        raise ValueError(
+            f"Annealing time ({max_annealing_time} ps) exceeds total simulation time "
+            f"({total_time_ps} ps). Please adjust nsteps or dt."
+        )
+    
+    # Check if cycle time matches
+    expected_time_ns = total_time_ps / 1000  # Convert to ns
+    if abs(expected_time_ns - cycle_time) > 0.01:
+        print(f"WARNING: Expected cycle time ({cycle_time} ns) differs from MDP time ({expected_time_ns} ns)")
+    
+    print(f"Annealing MDP validation passed: {total_time_ps} ps total time")
+
+
 def washing_cycle(work_dir: Path, gmx_exe: str = "gmx", 
                 ligand_resname: str = "LIG", 
                 displacement_cutoff: float = 6.0,
@@ -212,6 +277,12 @@ def washing_cycle(work_dir: Path, gmx_exe: str = "gmx",
         if not (work_dir / filename).exists():
             raise FileNotFoundError(f"Required file not found: {work_dir / filename}")
     
+    # Validate annealing MDP parameters
+    validate_annealing_mdp(work_dir / "annealing.mdp", cycle_time)
+    
+    # Regenerate index files to prevent index mismatch
+    regenerate_index_files(work_dir, gmx_exe)
+    
     # Read initial structure
     initial_atoms, header_footer = read_gro_file(work_dir / "npt.gro")
     initial_ligands = get_ligand_residues(initial_atoms, ligand_resname)
@@ -226,7 +297,7 @@ def washing_cycle(work_dir: Path, gmx_exe: str = "gmx",
     print(f"Running {cycle_time} ns annealing simulation...")
     run_gromacs_command(
         gmx_exe, 
-        ["grompp", "-f", "annealing.mdp", "-c", "npt.gro", "-p", "topol.top", "-o", "anneal.tpr"],
+        ["grompp", "-f", "annealing.mdp", "-c", "npt.gro", "-p", "topol.top", "-o", "anneal.tpr", "-maxwarn", "1"],
         work_dir
     )
     
@@ -236,11 +307,12 @@ def washing_cycle(work_dir: Path, gmx_exe: str = "gmx",
         work_dir
     )
     
-    # Extract final frame
-    print("Extracting final frame...")
+    # Extract final frame - calculate correct time point
+    final_time_ps = int(cycle_time * 1000)  # Convert ns to ps
+    print(f"Extracting final frame at {final_time_ps} ps...")
     run_gromacs_command(
         gmx_exe,
-        ["trjconv", "-s", "anneal.tpr", "-f", "anneal.xtc", "-o", "final.gro", "-dump", str(int(cycle_time * 500000))],
+        ["trjconv", "-s", "anneal.tpr", "-f", "anneal.xtc", "-o", "final.gro", "-dump", str(final_time_ps)],
         work_dir,
         input_text="0\n"  # Select system
     )
@@ -285,7 +357,13 @@ def washing_cycle(work_dir: Path, gmx_exe: str = "gmx",
         parts[0] = str(i + 1)
         atom.line = ' '.join(parts)
     
+    # Update header with new atom count
+    header_footer[1] = str(len(filtered_atoms))
+    
     write_gro_file(work_dir / "npt.gro", filtered_atoms, header_footer)
+    
+    # CRITICAL: Regenerate index files after topology change
+    regenerate_index_files(work_dir, gmx_exe)
     
     print(f"Washing cycle completed. {len(washed_residues)} ligands removed.")
 

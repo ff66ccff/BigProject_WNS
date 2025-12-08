@@ -42,20 +42,24 @@ class AtomRecord:
     
     def set_atom_type(self, atom_type: str) -> None:
         """Set atom type in PDBQT line (columns 78-79)."""
-        if len(self.line) >= 79:
-            self.line = self.line[:77] + atom_type.rjust(2) + self.line[79:]
-        else:
-            # Extend line if too short
-            self.line = self.line.ljust(79)[:77] + atom_type.rjust(2)
+        # Ensure line is at least 80 characters (PDBQT standard)
+        if len(self.line) < 80:
+            self.line = self.line.ljust(80)
+        
+        # Columns 78-79 are Python indices 77-78
+        # Use right-justified format for atom type
+        self.line = self.line[:77] + atom_type.rjust(2) + self.line[79:]
     
     def set_charge(self, charge: float) -> None:
         """Set charge in PDBQT line (columns 71-76)."""
-        charge_str = f"{charge:8.4f}"
-        if len(self.line) >= 77:
-            self.line = self.line[:70] + charge_str + self.line[78:]
-        else:
-            # Extend line if too short
-            self.line = self.line.ljust(70) + charge_str
+        # Ensure line is at least 80 characters (PDBQT standard)
+        if len(self.line) < 80:
+            self.line = self.line.ljust(80)
+        
+        # Columns 71-76 are Python indices 70-75
+        # Format: +0.0000 or -0.0000 (6 characters with sign)
+        charge_str = f"{charge:+6.4f}"
+        self.line = self.line[:70] + charge_str + self.line[76:]
 
 
 def calculate_distance(coord1: Tuple[float, float, float], 

@@ -39,6 +39,8 @@ wrapper:
   output_dir: "autodock_runs"                  # 对接输出目录
   template_dir: "scripts/templates"            # GPF/DPF 模板目录
   autogrid_log: "autodock_runs/autogrid.log"
+  max_cycles: 20                              # 最大循环次数，防止死循环
+  min_ligand_distance: 2.0                     # 配体间最小距离 (Å)，小于此值丢弃
 
 ambertools:
   ligand_script: "scripts/ligand_param.sh"     # 配体参数化脚本

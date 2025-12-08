@@ -126,6 +126,40 @@ python washing_cycle.py gmx/ -c 6.0 -t 1.0
 3. **配体残基名**：确保配体残基名在拓扑文件中正确设置
 4. **位移阈值**：可根据系统特性调整位移阈值（默认6.0 Å）
 
+## 风险排查
+
+在运行完整管道之前，建议使用验证脚本检查常见问题：
+
+```bash
+# 验证设置
+python scripts/validate_wns_setup.py --config config.yml
+
+# 验证特定工作目录
+python scripts/validate_wns_setup.py --config config.yml --work-dir ./gmx
+```
+
+### 常见问题及解决方案
+
+1. **PDBQT 格式错误**
+   - 确保所有 PDBQT 行长度 ≥ 80 字符
+   - 检查电荷列（71-76）和原子类型列（78-79）格式
+
+2. **MDP 时间不匹配**
+   - 确保 `nsteps * dt` 与 `annealing-time` 的最大值匹配
+   - 检查温度控制点数量是否一致
+
+3. **拓扑文件不一致**
+   - 每次删除配体后必须更新 `[ molecules ]` 部分
+   - 重新生成索引文件防止索引错乱
+
+4. **路径兼容性**
+   - Windows 路径需要转换为 WSL 格式
+   - WSL 可执行文件不应包含 Windows 路径
+
+5. **循环控制**
+   - 设置最大循环次数防止死循环
+   - 检查配体间最小距离避免重叠
+
 ## 参考文献
 
 Wrap 'n' Shake 算法的详细描述请参考原始论文。本实现遵循了论文中描述的核心算法原理，并针对 GROMACS 和 AutoDock 环境进行了优化。

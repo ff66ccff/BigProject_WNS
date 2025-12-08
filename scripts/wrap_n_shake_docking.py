@@ -23,10 +23,20 @@ from mask_pdbqt import mask_receptor
 
 def to_wsl_path(path: Path) -> str:
     """Convert Windows path to WSL path."""
-    drive = path.drive.rstrip(":")
-    if not drive:
-        return str(path.as_posix())
-    return "/mnt/" + drive.lower() + path.as_posix()[2:]
+    path_str = str(path)
+    
+    # Handle absolute Windows paths (e.g., D:\Project\data)
+    if ':' in path_str:
+        import os
+        drive, tail = os.path.splitdrive(path_str)
+        if drive:
+            drive_letter = drive[0].lower()
+            # Convert backslashes to forward slashes and remove leading backslash
+            linux_path = tail.replace('\\', '/').lstrip('/')
+            return f"/mnt/{drive_letter}/{linux_path}"
+    
+    # Handle relative paths or already Unix-style paths
+    return path_str.replace('\\', '/')
 
 
 def load_config(config_path: Path) -> Dict:
@@ -122,6 +132,58 @@ def extract_best_pose(dlg_file: Path, output_pdbqt: Path) -> None:
     print(f"Extracted best pose to {output_pdbqt}")
 
 
+def check_ligand_clash(new_ligand_path: Path, existing_ligands: List[Path], 
+                       min_distance: float = 2.0) -> bool:
+    """Check if new ligand clashes with existing ligands."""
+    if not existing_ligands:
+        return False
+    
+    # Load new ligand atoms
+    new_atoms = []
+    for line in new_ligand_path.read_text(encoding="utf-8").splitlines():
+        if line.startswith(("ATOM", "HETATM")):
+            try:
+                coord = (
+                    float(line[30:38]),
+                    float(line[38:46]),
+                    float(line[46:54]),
+                )
+                new_atoms.append(coord)
+            except (ValueError, IndexError):
+                continue
+    
+    if not new_atoms:
+        return True  # Treat as clash if no valid atoms
+    
+    # Check against existing ligands
+    for existing_ligand in existing_ligands:
+        existing_atoms = []
+        for line in existing_ligand.read_text(encoding="utf-8").splitlines():
+            if line.startswith(("ATOM", "HETATM")):
+                try:
+                    coord = (
+                        float(line[30:38]),
+                        float(line[38:46]),
+                        float(line[46:54]),
+                    )
+                    existing_atoms.append(coord)
+                except (ValueError, IndexError):
+                    continue
+        
+        # Calculate minimum distance
+        for new_coord in new_atoms:
+            for existing_coord in existing_atoms:
+                dist = math.sqrt(
+                    (new_coord[0] - existing_coord[0])**2 +
+                    (new_coord[1] - existing_coord[1])**2 +
+                    (new_coord[2] - existing_coord[2])**2
+                )
+                if dist < min_distance:
+                    return True  # Clash detected
+    
+    return False  # No clash
+
+
 def run_wrap_n_shake_docking(config: Dict, dry_run: bool = False) -> None:
     """Run Wrap 'n' Shake docking pipeline."""
     scripts_dir = Path(__file__).resolve().parent
@@ -176,11 +238,19 @@ def run_wrap_n_shake_docking(config: Dict, dry_run: bool = False) -> None:
     
     run_command(autogrid_cmd, dry_run, cwd=output_dir if not use_wsl_autogrid else None)
     
-    # Sequential docking loop
+    # Sequential docking loop with controls
     seeds = config["wrapper"]["seeds"]
+    max_cycles = config.get("wrapper", {}).get("max_cycles", 20)  # Prevent infinite loops
+    min_ligand_distance = config.get("wrapper", {}).get("min_ligand_distance", 2.0)
+    
     docked_ligands = []  # Store paths to docked ligand files
+    successful_docks = 0
     
     for i, seed in enumerate(seeds):
+        if successful_docks >= max_cycles:
+            print(f"\n=== Maximum cycles ({max_cycles}) reached, stopping ===")
+            break
+        
         print(f"\n=== Docking cycle {i+1}/{len(seeds)} (seed: {seed}) ===")
         
         # Generate DPF file
@@ -222,17 +292,26 @@ def run_wrap_n_shake_docking(config: Dict, dry_run: bool = False) -> None:
         
         # Extract best pose
         extract_best_pose(dlg_path, docked_ligand_path)
+        
+        # Check for ligand clashes
+        if check_ligand_clash(docked_ligand_path, docked_ligands, min_ligand_distance):
+            print(f"WARNING: Ligand {seed} clashes with existing ligands, discarding...")
+            docked_ligand_path.unlink()  # Remove the clashed ligand
+            continue
+        
+        # Accept this ligand
         docked_ligands.append(docked_ligand_path)
+        successful_docks += 1
         
         # Mask receptor atoms for next iteration
-        if i < len(seeds) - 1:  # Don't mask after the last docking
+        if i < len(seeds) - 1 and successful_docks < max_cycles:
             print(f"Masking receptor atoms near docked ligand {seed}...")
             receptor_next = output_dir / f"receptor_masked_{seed}.pdbqt"
             mask_receptor(receptor_current, [docked_ligand_path], receptor_next, cutoff=3.5)
             receptor_current = receptor_next  # Use masked receptor for next iteration
     
     print(f"\n=== Wrap 'n' Shake docking completed ===")
-    print(f"Docked {len(docked_ligands)} ligands:")
+    print(f"Successfully docked {len(docked_ligands)} ligands out of {len(seeds)} attempts:")
     for ligand_path in docked_ligands:
         print(f"  - {ligand_path}")
 

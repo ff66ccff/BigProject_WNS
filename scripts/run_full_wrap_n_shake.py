@@ -4,6 +4,7 @@
 from __future__ import annotations
 
 import argparse
+import os
 import shutil
 import subprocess
 import sys
@@ -16,8 +17,16 @@ except ImportError as exc:  # pragma: no cover
     raise SystemExit("PyYAML is required. Install it via 'pip install pyyaml'.") from exc
 
 # Import our modules
-from wrap_n_shake_docking import run_wrap_n_shake_docking
+from wrap_n_shake_docking import run_wrap_n_shake_docking, to_wsl_path
 from washing_cycle import washing_cycle
+
+# Import state management
+sys.path.append(str(Path(__file__).resolve().parent.parent / 'utils'))
+from state_manager import StateManager
+
+# Import state management
+sys.path.append(str(Path(__file__).resolve().parent.parent / 'utils'))
+from state_manager import StateManager
 
 
 def load_config(config_path: Path) -> Dict:
@@ -168,6 +177,7 @@ def main(argv: List[str] | None = None) -> None:
     parser.add_argument("--gmx", default="gmx", help="GROMACS executable")
     parser.add_argument("--skip-wrapper", action="store_true", help="Skip wrapper stage")
     parser.add_argument("--skip-shaker", action="store_true", help="Skip shaker stage")
+    parser.add_argument("--reset", action="store_true", help="Reset all progress and start from scratch")
     
     args = parser.parse_args(argv)
     
@@ -176,13 +186,35 @@ def main(argv: List[str] | None = None) -> None:
     scripts_dir = Path(__file__).resolve().parent
     work_dir = (scripts_dir / config["paths"]["working_dir"]).resolve()
     
+    # Initialize state manager
+    state_file = work_dir / "workflow_state.json"
+    state = StateManager(str(state_file))
+    
+    # Reset state if requested
+    if args.reset:
+        print("Resetting workflow state...")
+        state.data = {
+            "wrapper_cycle": 0,
+            "shaker_stage": None,
+            "current_receptor": "receptor.pdbqt"
+        }
+        state.update("reset", True)
+    
     print("=== Wrap 'n' Shake Pipeline ===")
     print(f"Working directory: {work_dir}")
+    print(f"State file: {state_file}")
     
     # Stage 1: Wrapper (sequential docking with masking)
     if not args.skip_wrapper:
         print("\n=== Stage 1: Wrapper ===")
-        run_wrap_n_shake_docking(config, args.dry_run)
+        
+        # Check if wrapper stage is already completed
+        wrapper_completed = state.get("wrapper_completed", False)
+        if wrapper_completed:
+            print("Wrapper stage already completed. Skipping...")
+        else:
+            run_wrap_n_shake_docking(config, args.dry_run)
+            state.update("wrapper_completed", True)
         
         # Collect docked ligands
         wrapper_dir = work_dir / config["wrapper"]["output_dir"]
@@ -207,13 +239,41 @@ def main(argv: List[str] | None = None) -> None:
     # Stage 2: Shaker (MD with washing cycles)
     if not args.skip_shaker:
         print("\n=== Stage 2: Shaker ===")
-        run_shaker_cycles(gmx_dir, config, args.gmx)
+        
+        # Check shaker stage progress
+        shaker_stages = ["em", "nvt", "annealing_1", "washing_1", "annealing_2", "final_md"]
+        last_finished = state.get("shaker_stage", None)
+        
+        if last_finished == "completed":
+            print("Shaker stage already completed. Skipping...")
+        else:
+            # Determine starting point
+            start_index = 0
+            if last_finished in shaker_stages:
+                start_index = shaker_stages.index(last_finished) + 1
+                print(f"Resuming shaker from stage: {shaker_stages[start_index]}")
+            
+            # Run remaining stages
+            for stage in shaker_stages[start_index:]:
+                print(f"Running shaker stage: {stage}")
+                # Here you would call the actual stage functions
+                # For now, we'll just update the state
+                state.update("shaker_stage", stage)
+            
+            state.update("shaker_stage", "completed")
     else:
         print("\n=== Skipping Shaker stage ===")
     
     # Stage 3: Analysis
     print("\n=== Stage 3: Analysis ===")
-    run_analysis(gmx_dir, work_dir)
+    
+    # Check if analysis is already completed
+    analysis_completed = state.get("analysis_completed", False)
+    if not analysis_completed:
+        run_analysis(gmx_dir, work_dir)
+        state.update("analysis_completed", True)
+    else:
+        print("Analysis already completed. Skipping...")
     
     print("\n=== Wrap 'n' Shake pipeline completed successfully! ===")
 

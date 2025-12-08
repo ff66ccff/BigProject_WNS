@@ -20,6 +20,10 @@ PROJECT_ROOT = SCRIPTS_DIR.parent
 DEFAULT_CONFIG = SCRIPTS_DIR / "config.yml"
 UPDATE_MANIFEST = SCRIPTS_DIR / "update_manifest.py"
 
+# Import state management
+sys.path.append(str(SCRIPTS_DIR.parent / 'utils'))
+from state_manager import StateManager
+
 
 class PipelineError(RuntimeError):
     """Domain-specific error for pipeline failures."""
@@ -172,12 +176,27 @@ def main(argv: List[str] | None = None) -> None:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--config", default=str(DEFAULT_CONFIG), help="Path to config.yml")
     parser.add_argument("--dry-run", action="store_true", help="Print commands without executing")
+    parser.add_argument("--reset", action="store_true", help="Reset all progress and start from scratch")
     args = parser.parse_args(argv)
 
     config = load_config(Path(args.config))
     working_dir = (SCRIPTS_DIR / config["paths"]["working_dir"]).resolve()
     python_exe = config["paths"].get("python", "python")
     manifest_path = (working_dir / config.get("manifest", {}).get("path", "manifest/run-manifest.yml")).resolve()
+    
+    # Initialize state manager
+    state_file = working_dir / "pipeline_state.json"
+    state = StateManager(str(state_file))
+    
+    # Reset state if requested
+    if args.reset:
+        print("Resetting pipeline state...")
+        state.data = {
+            "step": 0,
+            "current_stage": None,
+            "completed_stages": []
+        }
+        state.update("reset", True)
 
     mgl_root = Path(config["paths"]["mgltools_root"]).resolve()
     mgl_paths = build_mgl_paths(mgl_root)
@@ -198,8 +217,42 @@ def main(argv: List[str] | None = None) -> None:
 
     receptor_seed = str(config.get("receptor", {}).get("seed", "20231129"))
     wrapper_seeds = [str(seed) for seed in config.get("wrapper", {}).get("seeds", [])]
-
-    # Step 1: clean protein PDB
+    
+    # Define pipeline stages
+    pipeline_stages = [
+        "clean_protein",
+        "prepare_receptor",
+        "prepare_ligand", 
+        "parameterize_ligand",
+        "run_wrapper",
+        "build_complex",
+        "run_gromacs"
+    ]
+    
+    # Get current stage
+    current_stage = state.get("current_stage", None)
+    completed_stages = state.get("completed_stages", [])
+    
+    print(f"Current stage: {current_stage}")
+    print(f"Completed stages: {completed_stages}")
+    
+    # Determine starting stage
+    if current_stage and current_stage in pipeline_stages:
+        start_idx = pipeline_stages.index(current_stage)
+    else:
+        start_idx = 0
+    
+    # Run stages from starting point
+    for i, stage in enumerate(pipeline_stages[start_idx:], start=start_idx):
+        if stage in completed_stages:
+            print(f"Skipping completed stage: {stage}")
+            continue
+            
+        print(f"\n=== Running stage: {stage} ===")
+        
+        try:
+            if stage == "clean_protein":
+                # Step 1: clean protein PDB
     make_parent(cleaned_protein)
     preprocess_cmd = [
         python_exe,

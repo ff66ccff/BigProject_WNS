@@ -21,7 +21,7 @@ ref_t       = 300 300     ; Reference temperature (K)
 ; Simulated annealing settings
 annealing   = single      ; Single annealing cycle
 annealing-npoints = 3     ; Number of temperature control points
-annealing-time  = 0 250 500  ; Time points (ps)
+annealing-time  = 0 250 500  ; Time points (ps) - MUST match nsteps*dt
 annealing-temp  = 300 353 300  ; Temperature profile (K)
                           ; Room temp -> 80°C -> Room temp
                           ; Use 323K (50°C) for small molecules
