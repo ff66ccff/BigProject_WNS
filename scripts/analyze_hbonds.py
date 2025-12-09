@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Hydrogen bond analysis for WnS project: Count H-bonds and generate PyMOL visualization."""
+"""Hydrogen bond analysis for WnS project: Count H-bonds and filter stable interactions."""
 
 from __future__ import annotations
 
@@ -350,6 +350,11 @@ def calculate_wns_score(pdb_file: Path, trajectory_file: Optional[Path] = None,
         hbonds = count_hydrogen_bonds(protein_atoms, ligand_atoms)
         n_hbonds = len(hbonds)
         
+        # Only process ligands that have hydrogen bonds
+        if n_hbonds == 0:
+            print(f"Ligand {best_ligand_id}: No hydrogen bonds found, skipping")
+            continue
+        
         # Calculate WnS score (lower is better)
         # Energy term (negative for favorable) + hydrogen bond bonus
         final_score = e_inter - (n_hbonds * 2.0)
@@ -382,54 +387,7 @@ def calculate_wns_score(pdb_file: Path, trajectory_file: Optional[Path] = None,
     return sorted(scores, key=lambda x: x['score'])
 
 
-def generate_pymol_script(scores: List[Dict], pdb_file: Path, 
-                         output_pml: str = "view_hbonds.pml",
-                         ligand_resname: str = "LIG") -> None:
-    """Generate PyMOL script to visualize hydrogen bonds."""
-    print(f"Generating PyMOL script: {output_pml}")
-    
-    with open(output_pml, 'w', encoding='utf-8') as f:
-        # Basic setup
-        f.write(f"load {pdb_file}\n")
-        f.write("hide everything\n")
-        f.write("show cartoon, protein\n")
-        f.write("color white, protein\n")
-        f.write("show surface, protein\n")
-        f.write("set transparency, 0.3, protein\n")
-        
-        # Visualize top 5 ligands
-        for i, item in enumerate(scores[:5]):
-            lig_id = item['ligand_id']
-            f.write(f"select lig_{i}, resn {ligand_resname} and resid {lig_id}\n")
-            f.write(f"show sticks, lig_{i}\n")
-            f.write(f"color cyan, lig_{i}\n")
-            
-            # Draw hydrogen bonds
-            for j, hbond in enumerate(item['hbond_details']):
-                donor_sel = f"resn {hbond['donor_residue'][:-1]} and resid {hbond['donor_residue'][-1]} and name {hbond['donor_atom']}"
-                acceptor_sel = f"resn {hbond['acceptor_residue'][:-1]} and resid {hbond['acceptor_residue'][-1]} and name {hbond['acceptor_atom']}"
-                
-                f.write(f"dist hb_{i}_{j}, {donor_sel}, {acceptor_sel}, mode=2\n")
-                f.write(f"set dash_color, yellow, hb_{i}_{j}\n")
-                f.write(f"set dash_width, 2, hb_{i}_{j}\n")
-            
-            # Label the ligand with score information
-            f.write(f"label lig_{i}, 'Lig{lig_id}: Score={item['score']:.1f}, H-bonds={item['n_hbonds']}'\n")
-        
-        # Set view
-        if scores:
-            f.write("zoom lig_0\n")
-            f.write("orient lig_0\n")
-        
-        # Add legend
-        f.write("pseudoatom legend, pos=[10,10,10]\n")
-        f.write("label legend, 'Yellow dashes: Hydrogen bonds\\nCyan sticks: Ligands\\nWhite: Protein surface'\n")
-        
-        # Save session
-        f.write("save hbonds_session.pse\n")
-    
-    print(f"PyMOL script generated: {output_pml}")
-    print("To visualize: open PyMOL and run the script, or double-click the .pml file")
+
 
 
 def save_results_to_csv(scores: List[Dict], output_csv: str = "hbond_analysis.csv") -> None:
@@ -489,10 +447,6 @@ def main() -> None:
         print("No ligands found for analysis")
         return
     
-    # Generate PyMOL script
-    pml_file = f"{args.output}.pml"
-    generate_pymol_script(scores, args.pdb_file, pml_file, args.ligand)
-    
     # Save to CSV if requested
     if args.csv:
         csv_file = f"{args.output}.csv"
@@ -500,16 +454,16 @@ def main() -> None:
     
     # Print summary
     print("\n=== Hydrogen Bond Analysis Summary ===")
-    print(f"Total ligands analyzed: {len(scores)}")
+    print(f"Total ligands with hydrogen bonds: {len(scores)}")
     print(f"Total hydrogen bonds found: {sum(item['n_hbonds'] for item in scores)}")
     
-    print("\nTop 5 ligands by WnS score:")
-    for i, item in enumerate(scores[:5]):
+    print("\nTop ligands by WnS score:")
+    for i, item in enumerate(scores):
         print(f"{i+1}. Ligand {item['ligand_id']}: Score={item['score']:.2f}, "
               f"H-bonds={item['n_hbonds']}, Energy={item['e_inter']:.2f}")
     
-    print(f"\nVisualization script: {pml_file}")
-    print("To view in PyMOL: open PyMOL and run the script, or double-click the .pml file")
+    print(f"\nResults saved to: {args.output}.csv")
+    print("Only ligands with hydrogen bonds are included in the output")
 
 
 if __name__ == "__main__":

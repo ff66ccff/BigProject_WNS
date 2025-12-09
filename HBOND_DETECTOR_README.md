@@ -8,7 +8,7 @@
 
 1. **Wrapper阶段**：在蛋白质表面生成多个配体构象
 2. **Shaker阶段**：通过模拟退火测试氢键稳定性
-3. **Analysis阶段**：统计氢键并生成PyMOL可视化脚本
+3. **Analysis阶段**：统计氢键并筛选稳定相互作用
 
 ## 🚀 快速开始
 
@@ -90,8 +90,7 @@ python scripts/analyze_hbonds.py gmx/final_complex.pdb -o hbond_results --csv
 ```
 
 输出：
-- `hbond_results.pml` - PyMOL可视化脚本
-- `hbond_results.csv` - 详细分析结果
+- `hbond_results.csv` - 详细分析结果（仅包含有氢键的配体）
 
 ## 📊 结果解读
 
@@ -110,17 +109,16 @@ WnS Score = 相互作用能 (E_inter) - (氢键数量 × 2.0)
 - **距离**：供体-受体 < 3.5Å
 - **角度**：供体-氢-受体 > 120°
 
-### PyMOL可视化
+### 结果分析
 
-双击 `.pml` 文件或运行：
-```bash
-pymol hbond_results.pml
-```
+生成的CSV文件包含：
+- 配体ID和聚类信息
+- WnS评分（越低越好）
+- 相互作用能
+- 氢键数量和详细信息
+- 氢键的供体/受体原子对
 
-可视化元素：
-- 白色：蛋白质表面
-- 青色：配体
-- 黄色虚线：氢键
+只有具有氢键的配体会被包含在结果中。
 
 ## 🔧 高级配置
 

@@ -253,58 +253,58 @@ def main(argv: List[str] | None = None) -> None:
         try:
             if stage == "clean_protein":
                 # Step 1: clean protein PDB
-    make_parent(cleaned_protein)
-    preprocess_cmd = [
-        python_exe,
-        str(SCRIPTS_DIR / "preprocess_pdb.py"),
-        str(raw_protein),
-        "-o",
-        str(cleaned_protein),
-    ]
-    executed = run_command("Clean protein PDB", preprocess_cmd, args.dry_run)
-    if executed:
-        update_manifest(
-            python_exe,
-            manifest_path,
-            commands=[" ".join(preprocess_cmd)],
-            inputs={"raw_protein": str(raw_protein)},
-            outputs={"cleaned_protein": str(cleaned_protein)},
-        )
+                make_parent(cleaned_protein)
+                preprocess_cmd = [
+                    python_exe,
+                    str(SCRIPTS_DIR / "preprocess_pdb.py"),
+                    str(raw_protein),
+                    "-o",
+                    str(cleaned_protein),
+                ]
+                executed = run_command("Clean protein PDB", preprocess_cmd, args.dry_run)
+                if executed:
+                    update_manifest(
+                        python_exe,
+                        manifest_path,
+                        commands=[" ".join(preprocess_cmd)],
+                        inputs={"raw_protein": str(raw_protein)},
+                        outputs={"cleaned_protein": str(cleaned_protein)},
+                    )
 
-    # Step 2: receptor PDBQT via MGLTools
-    make_parent(receptor_pdbqt)
-    receptor_cmd = [
-        str(mgl_paths["python"]),
-        str(mgl_paths["prepare_receptor"]),
-        "-r",
-        cleaned_protein.name,
-        "-o",
-        str(receptor_pdbqt),
-        "-A",
-        "checkhydrogens",
-        "-U",
-        "nphs_lps",
-        "-e",
-        f"seed={receptor_seed}",
-    ]
-    executed = run_command(
-        "Prepare receptor PDBQT",
-        receptor_cmd,
-        args.dry_run,
-        cwd=cleaned_protein.parent,
-    )
-    if executed:
-        update_manifest(
-            python_exe,
-            manifest_path,
-            commands=[" ".join(receptor_cmd)],
-            seeds=[receptor_seed],
-            outputs={"receptor_pdbqt": str(receptor_pdbqt)},
-        )
+                # Step 2: receptor PDBQT via MGLTools
+                make_parent(receptor_pdbqt)
+                receptor_cmd = [
+                    str(mgl_paths["python"]),
+                    str(mgl_paths["prepare_receptor"]),
+                    "-r",
+                    cleaned_protein.name,
+                    "-o",
+                    str(receptor_pdbqt),
+                    "-A",
+                    "checkhydrogens",
+                    "-U",
+                    "nphs_lps",
+                    "-e",
+                    f"seed={receptor_seed}",
+                ]
+                executed = run_command(
+                    "Prepare receptor PDBQT",
+                    receptor_cmd,
+                    args.dry_run,
+                    cwd=cleaned_protein.parent,
+                )
+                if executed:
+                    update_manifest(
+                        python_exe,
+                        manifest_path,
+                        commands=[" ".join(receptor_cmd)],
+                        seeds=[receptor_seed],
+                        outputs={"receptor_pdbqt": str(receptor_pdbqt)},
+                    )
 
-    # Step 3: ligand PDBQT via MGLTools
-    make_parent(ligand_pdbqt)
-    ligand_cmd = [
+            # Step 3: ligand PDBQT via MGLTools
+            make_parent(ligand_pdbqt)
+            ligand_cmd = [
         str(mgl_paths["python"]),
         str(mgl_paths["prepare_ligand"]),
         "-l",
@@ -448,7 +448,54 @@ def main(argv: List[str] | None = None) -> None:
             outputs={"gromacs_workdir": str(gmx_workdir)},
         )
 
-    print("Pipeline completed.")
+    # Step 8: Stable hydrogen bond filtering
+    final_tpr = gmx_workdir / "final.tpr"
+    final_xtc = gmx_workdir / "final.xtc"
+    stable_hbond_output = working_dir / "final_results" / "stable_hbond_complex.pdb"
+    
+    if final_tpr.exists():
+        hbond_cmd = [
+            python_exe,
+            str(SCRIPTS_DIR / "filter_stable_hbonds.py"),
+            "--tpr",
+            str(final_tpr),
+            "--output",
+            str(stable_hbond_output)
+        ]
+        
+        # Add trajectory file if it exists
+        if final_xtc.exists():
+            hbond_cmd.extend(["--traj", str(final_xtc)])
+        
+        executed = run_command("Stable hydrogen bond filtering", hbond_cmd, args.dry_run)
+        if executed:
+            update_manifest(
+                python_exe,
+                manifest_path,
+                commands=[" ".join(hbond_cmd)],
+                outputs={"stable_hbond_complex": str(stable_hbond_output)},
+            )
+            
+            # Also run detailed analysis on the filtered results
+            if stable_hbond_output.exists():
+                analysis_output = working_dir / "hbond_analysis"
+                analysis_cmd = [
+                    python_exe,
+                    str(SCRIPTS_DIR / "analyze_hbonds.py"),
+                    str(stable_hbond_output),
+                    "-o",
+                    str(analysis_output),
+                    "--csv"
+                ]
+                run_command("Hydrogen bond analysis", analysis_cmd, args.dry_run)
+        else:
+            print("[WARN] Final TPR file not found, skipping stable hydrogen bond filtering")
+
+        print("Pipeline completed with stable hydrogen bond filtering.")
+    
+    except Exception as e:
+        print(f"Error in stage {stage}: {e}")
+        raise PipelineError(f"Pipeline failed at stage {stage}: {e}")
 
 
 if __name__ == "__main__":

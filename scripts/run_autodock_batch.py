@@ -5,6 +5,7 @@ from __future__ import annotations
 
 import argparse
 import os
+import shutil
 import subprocess
 import sys
 from pathlib import Path
@@ -164,6 +165,15 @@ def main(argv: List[str] | None = None) -> None:
 
     gpf_content = render_template(template_dir / "gpf_template.txt", gpf_mapping)
     write_file(gpf_path, gpf_content)
+    
+    # Copy AD4_parameters.dat to output directory for AutoGrid
+    param_file_src = template_dir.parent / "AD4_parameters.dat"
+    if param_file_src.exists():
+        param_file_dst = output_dir / "AD4_parameters.dat"
+        shutil.copy2(param_file_src, param_file_dst)
+        print(f"Copied AD4_parameters.dat to {param_file_dst}")
+    else:
+        print(f"[WARN] AD4_parameters.dat not found at {param_file_src}")
 
     autogrid_exe = config["paths"]["autogrid4"]
     # Determine if we need WSL: command not on Windows but exists in WSL

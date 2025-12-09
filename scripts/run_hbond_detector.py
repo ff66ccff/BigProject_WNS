@@ -17,7 +17,7 @@ except ImportError as exc:  # pragma: no cover
     raise SystemExit("PyYAML is required. Install it via 'pip install pyyaml'.") from exc
 
 # Import our modules
-from analyze_hbonds import calculate_wns_score, generate_pymol_script, save_results_to_csv
+from analyze_hbonds import calculate_wns_score, save_results_to_csv
 from washing_cycle import washing_cycle
 
 
@@ -141,16 +141,12 @@ def run_analysis_stage(config: Dict, final_complex: Path, dry_run: bool = False)
     run_command(cmd, cwd=working_dir, dry_run=dry_run)
     
     # Check for outputs
-    pml_file = working_dir / "hbond_results.pml"
     csv_file = working_dir / "hbond_results.csv"
     
     if not dry_run:
-        if pml_file.exists():
-            print(f"PyMOL visualization script: {pml_file}")
-            print("To view: open PyMOL and run the script, or double-click the .pml file")
-        
         if csv_file.exists():
             print(f"Analysis results: {csv_file}")
+            print(f"Only ligands with hydrogen bonds are included in the output")
     
     print("Analysis stage completed")
 
