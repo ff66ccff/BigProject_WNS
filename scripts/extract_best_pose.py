@@ -33,12 +33,18 @@ def extract_best_poses(output_dir: Path):
 
 
 def pdbqt_to_pdb(pdbqt_content: str) -> str:
-    """Convert PDBQT content to PDB format."""
+    """Convert PDBQT content to PDB format with proper element column."""
     pdb_lines = []
     for line in pdbqt_content.split('\n'):
         if line.startswith(('ATOM', 'HETATM')):
-            # Convert PDBQT to PDB (remove charge and type columns)
-            pdb_line = line[:66]
+            # Get atom name to extract element
+            atom_name = line[12:16].strip()
+            # First character of atom name is usually element (H, C, N, O)
+            element = atom_name[0] if atom_name else 'X'
+            
+            # Convert PDBQT to PDB format
+            # Cols 1-66: standard PDB, cols 77-78: element
+            pdb_line = line[:66].ljust(76) + element.rjust(2)
             # Replace UNL with LIG for ligand residue name
             pdb_line = pdb_line[:17] + 'LIG' + pdb_line[20:]
             pdb_lines.append(pdb_line)

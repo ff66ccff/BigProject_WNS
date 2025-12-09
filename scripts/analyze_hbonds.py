@@ -37,7 +37,14 @@ class Atom:
             float(line[38:46]),
             float(line[46:54]),
         )
-        self.element = line[76:78].strip() if len(line) > 76 else self.atom_name[0]
+        # Support both PDB and PDBQT formats
+        if len(line) > 77:
+            # PDBQT format: atom type in cols 78-79
+            self.pdbqt_type = line[77:79].strip()
+            self.element = self.pdbqt_type[0] if self.pdbqt_type else self.atom_name[0]
+        else:
+            self.pdbqt_type = None
+            self.element = line[76:78].strip() if len(line) > 76 else self.atom_name[0]
 
 
 class HydrogenBond:
@@ -109,39 +116,39 @@ def read_pdb_file(pdb_file: Path) -> List[Atom]:
 
 def is_donor(atom: Atom) -> bool:
     """Check if atom can be a hydrogen bond donor."""
-    # Common donor atoms: N, O with attached hydrogen
+    # PDBQT types: HD=H attached to donor, NA=N acceptor/donor, OA=O acceptor
+    if hasattr(atom, 'pdbqt_type') and atom.pdbqt_type:
+        # In PDBQT, N and O with attached H can donate
+        return atom.pdbqt_type in ['N', 'NA'] or atom.element in ['N', 'O']
+    
+    # Fallback for PDB format
     if atom.element not in ['N', 'O']:
         return False
-    
-    # Check if atom name suggests it's attached to hydrogen
-    donor_patterns = ['N', 'NH', 'NH1', 'NH2', 'NZ', 'NE', 'ND', 'OG', 'OH', 'SER', 'THR', 'TYR']
-    for pattern in donor_patterns:
-        if pattern in atom.atom_name:
-            return True
-    
-    return False
+    return True
 
 
 def is_acceptor(atom: Atom) -> bool:
     """Check if atom can be a hydrogen bond acceptor."""
-    # Common acceptor atoms: N, O, S
-    if atom.element not in ['N', 'O', 'S']:
-        return False
+    # PDBQT types: OA=O acceptor, NA=N acceptor, SA=S acceptor
+    if hasattr(atom, 'pdbqt_type') and atom.pdbqt_type:
+        return atom.pdbqt_type in ['OA', 'NA', 'SA', 'O', 'N', 'S']
     
-    # Check if atom name suggests it can accept hydrogen
-    acceptor_patterns = ['N', 'O', 'OD1', 'OD2', 'OE1', 'OE2', 'OG', 'OH', 'SD', 'SG']
-    for pattern in acceptor_patterns:
-        if pattern in atom.atom_name:
-            return True
-    
-    return False
+    # Fallback for PDB format
+    return atom.element in ['N', 'O', 'S']
 
 
 def find_hydrogen_atoms(atoms: List[Atom], donor: Atom) -> List[Atom]:
     """Find hydrogen atoms attached to a donor atom."""
     hydrogens = []
     for atom in atoms:
-        if atom.element == 'H' and atom.residue_id == donor.residue_id:
+        # Check if atom is hydrogen (by PDBQT type HD or element H)
+        is_hydrogen = False
+        if hasattr(atom, 'pdbqt_type') and atom.pdbqt_type == 'HD':
+            is_hydrogen = True
+        elif atom.element == 'H' or atom.atom_name.startswith('H'):
+            is_hydrogen = True
+        
+        if is_hydrogen:
             # Check if hydrogen is close to donor (within 1.5 Å)
             if calculate_distance(donor.coord, atom.coord) < 1.5:
                 hydrogens.append(atom)

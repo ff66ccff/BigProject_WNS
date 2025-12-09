@@ -1,0 +1,2 @@
+ligand_id,cluster_id,score,e_inter,n_hbonds,hbond_details,coords_x,coords_y,coords_z
+1,0,756.4574448966534,758.4574448966534,1,THR761(OG1)-LIG1(N) d=3.41Å a=127.0°,-6.976999999999999,-0.8848450704225352,2.035774647887324

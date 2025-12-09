@@ -4,6 +4,7 @@
 from __future__ import annotations
 
 import os
+import shutil
 import subprocess
 import sys
 from pathlib import Path
@@ -98,20 +99,30 @@ def run_gromacs_pipeline(input_pdb, work_dir, gmx_cmd="gmx", ligand_mol2=None):
                 # Check if ligand exists and parameterize
                 has_ligand = False
                 if ligand_mol2 and Path(ligand_mol2).exists():
-                    # Run ACPYPE for ligand parameterization
-                    print("Parameterizing ligand with ACPYPE...")
-                    try:
-                        # Activate conda environment and run ACPYPE
-                        acpype_cmd = [
-                            "bash", "-c", 
-                            f"source ~/miniconda3/etc/profile.d/conda.sh && "
-                            f"conda activate amber && "
-                            f"acpype -i {ligand_mol2} -n 0 -a gaff2 -o gmx -f"
-                        ]
-                        run_command(acpype_cmd, cwd=work_dir)
-                        has_ligand = True
-                    except subprocess.CalledProcessError:
-                        print("ACPYPE failed, proceeding with protein only")
+                    # Check for ACPYPE
+                    acpype_exe = shutil.which("acpype")
+                    if acpype_exe:
+                        acpype_cmd = [acpype_exe, "-i", str(ligand_mol2), "-n", "0", "-a", "gaff2", "-o", "gmx", "-f"]
+                        use_python_module = False
+                    else:
+                        # Fallback: try python -m acpype
+                        try:
+                            subprocess.run(["python3", "-m", "acpype", "--help"], capture_output=True, check=True)
+                            acpype_cmd = ["python3", "-m", "acpype", "-i", str(ligand_mol2), "-n", "0", "-a", "gaff2", "-o", "gmx", "-f"]
+                            use_python_module = True
+                        except subprocess.CalledProcessError:
+                            acpype_cmd = None
+                    
+                    if acpype_cmd:
+                        print(f"Parameterizing ligand with ACPYPE (via {'module' if use_python_module else 'binary'})...")
+                        try:
+                            run_command(acpype_cmd, cwd=work_dir)
+                            has_ligand = True
+                        except subprocess.CalledProcessError:
+                            print("ACPYPE failed, proceeding with protein only")
+                            has_ligand = False
+                    else:    
+                        print("ACPYPE not found in PATH or as python module. Proceeding with protein only.")
                         has_ligand = False
                 else:
                     print("No ligand file provided, proceeding with protein only")
