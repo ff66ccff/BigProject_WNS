@@ -1,12 +1,18 @@
-# AVS field file
+#!/usr/bin/env python3
+"""创建正确的FLD文件"""
+
+def create_fld_file():
+    """创建只包含5个原子类型的FLD文件"""
+    
+    fld_content = """# AVS field file
 #
 # AutoDock Atomic Affinity and Electrostatic Grids
 #
-# Created by /usr/bin/autogrid4.
+# Created by autogrid4.
 #
 #SPACING 0.375
 #NELEMENTS 60 60 60
-#CENTER -6.960 -0.140 27.510
+#CENTER 0.000 0.000 0.000
 #MACROMOLECULE protein.pdbqt
 #GRID_PARAMETER_FILE autogrid.gpf
 #
@@ -26,8 +32,8 @@ label=C-affinity	# component label for variable 2
 label=N-affinity	# component label for variable 3
 label=NA-affinity	# component label for variable 4
 label=OA-affinity	# component label for variable 5
-label=Electrostatics	# component label for variable 5
-label=Desolvation	# component label for variable 6
+label=Electrostatics	# component label for variable 6
+label=Desolvation	# component label for variable 7
 #
 # location of affinity grid files and how to read them
 #
@@ -38,3 +44,12 @@ variable 4 file=NA.map filetype=ascii skip=6
 variable 5 file=OA.map filetype=ascii skip=6
 variable 6 file=e.map filetype=ascii skip=6
 variable 7 file=d.map filetype=ascii skip=6
+"""
+    
+    with open('protein.maps.fld', 'w') as f:
+        f.write(fld_content)
+    
+    print("Created new protein.maps.fld with correct variable numbering")
+
+if __name__ == "__main__":
+    create_fld_file()

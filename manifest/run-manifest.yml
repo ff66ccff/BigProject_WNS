@@ -316,6 +316,10 @@ commands:
   D:\PersonalFile\Documents\BigProject\SRC\project\pdb\protein_clean.pdb D:\PersonalFile\Documents\BigProject\SRC\project\autodock_runs\intermediate1.pdbqt
   D:\PersonalFile\Documents\BigProject\SRC\project\autodock_runs\MAB_2301.pdbqt D:\PersonalFile\Documents\BigProject\SRC\project\autodock_runs\protein.pdbqt
   -o D:\PersonalFile\Documents\BigProject\SRC\project\complex\complex_filtered.pdb
+- python D:\PersonalFile\Documents\BigProject\SRC\project\scripts\build_complex.py
+  D:\PersonalFile\Documents\BigProject\SRC\project\pdb\protein_clean.pdb D:\PersonalFile\Documents\BigProject\SRC\project\autodock_runs\intermediate1_3d.pdbqt
+  D:\PersonalFile\Documents\BigProject\SRC\project\autodock_runs\protein.pdbqt -o
+  D:\PersonalFile\Documents\BigProject\SRC\project\complex\complex_filtered.pdb
 random_seeds:
 - '20231129'
 - '20231129'

@@ -204,7 +204,7 @@ def main(argv: List[str] | None = None) -> None:
     for seed in config["wrapper"]["seeds"]:
         map_definitions = "\n".join([
             f"map {ligand_type}.map" for ligand_type in config["inputs"]["ligand_types"].split()
-        ])
+        ] + ["elecmap e.map", "dsolvmap d.map"])
         mapping = {
             "seed": str(seed),
             "ligand_types": config["inputs"]["ligand_types"],

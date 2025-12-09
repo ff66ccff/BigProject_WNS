@@ -1,8 +1,7 @@
-parameter_file AD4_parameters.dat
 npts 60 60 60
 gridfld protein.maps.fld
-receptor protein.pdbqt
-gridcenter -6.96 -0.14 27.51
+receptor receptor_current.pdbqt
+gridcenter 0.0 0.0 0.0
 spacing 0.375
 ligand_types A C N NA OA
 map A.map

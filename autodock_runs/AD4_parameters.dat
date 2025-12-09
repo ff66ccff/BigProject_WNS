@@ -1,0 +1,15 @@
+# AutoDock 4.2 Parameters File
+# This file contains the parameters for the X atom type (Sc2)
+# Used in the Wrap 'n' Shake hydrogen bond detection workflow
+
+# Atom type definition for X (Sc2 - short-range repulsion)
+# Format: atom_par Rmin epsilon (well-depth, sig, vol, solpar, etc.)
+# Rmin: Minimum distance parameter (Angstroms)
+# epsilon: Well depth parameter (kcal/mol)
+# Additional parameters follow AutoDock 4.2 format
+
+# X atom parameters for Sc2 (short-range repulsion)
+# These parameters ensure proper grid generation for the X atom type
+atom_par X 3.60 0.0001 12.00 -0.00110 0.0 0.0 0 -1 -1 3
+
+# End of parameter file

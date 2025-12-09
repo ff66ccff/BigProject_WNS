@@ -10,7 +10,7 @@
                    Compiled on Feb 20 2022 at 09:48:33
 
 
-This file was created at:			10:12 57" a.m., 12/09/2025
+This file was created at:			10:12 58" a.m., 12/09/2025
                    on host:		"66CCFF-R9000P"
 Current Working Directory = "/mnt/d/PersonalFile/Documents/BigProject/SRC/project/autodock_runs"
 
@@ -20,8 +20,8 @@ Current Working Directory = "/mnt/d/PersonalFile/Documents/BigProject/SRC/projec
       ________________________________________________________________
 
 
-Random number generator was seeded with values 20, 1765246377.
-Docking parameter file (DPF) used for this docking:		wrapper_101.dpf
+Random number generator was seeded with values 23, 1765246378.
+Docking parameter file (DPF) used for this docking:		wrapper_202.dpf
 DPF> autodock_parameter_version 4.2
 
 	Autodock parameter version 4.2.
@@ -31,9 +31,9 @@ Output Level = 1  ADT-COMPATIBLE OUTPUT DURING DOCKING.
 DPF> intelec
 
 Electrostatic energies will be calculated for all non-bonds between moving atoms.
-DPF> seed 101
+DPF> seed 202
 
-Random number generator was seeded with values 101, 1765246377.
+Random number generator was seeded with values 202, 1765246378.
 DPF> ligand_types A C N NA OA
 
 DPF> fld protein.maps.fld
@@ -222,7 +222,7 @@ USER    (4) Unbound System's Energy  [=(2)] =   +3.91e+07 kcal/mol
 USER    
 USER    
 USER  
-USER    DPF = wrapper_101.dpf
+USER    DPF = wrapper_202.dpf
 USER    NEWDPF move	intermediate1_3d.pdbqt
 USER    NEWDPF about	0.000000 0.000000 0.000000
 USER    NEWDPF tran0	60218101930313001024821916197180798577244553297581557255835324315236023391126193023945189698133636844761887643808288329689689347377480700388268685918208.000000 0.000000 0.000000
@@ -280,23 +280,23 @@ AVSFLD: dim2=1           # conformations
 AVSFLD: data=Real       # data type (byte,integer,Real,double)
 AVSFLD: field=uniform    # field coordinate layout
 AVSFLD: label= x y z vdW Elec q RMS
-AVSFLD: variable 1 file = wrapper_101.dlg.pdb filetype = ascii offset = 5 stride = 12
-AVSFLD: variable 2 file = wrapper_101.dlg.pdb filetype = ascii offset = 6 stride = 12
-AVSFLD: variable 3 file = wrapper_101.dlg.pdb filetype = ascii offset = 7 stride = 12
-AVSFLD: variable 4 file = wrapper_101.dlg.pdb filetype = ascii offset = 8 stride = 12
-AVSFLD: variable 5 file = wrapper_101.dlg.pdb filetype = ascii offset = 9 stride = 12
-AVSFLD: variable 6 file = wrapper_101.dlg.pdb filetype = ascii offset = 10 stride = 12
-AVSFLD: variable 7 file = wrapper_101.dlg.pdb filetype = ascii offset = 11 stride = 12
+AVSFLD: variable 1 file = wrapper_202.dlg.pdb filetype = ascii offset = 5 stride = 12
+AVSFLD: variable 2 file = wrapper_202.dlg.pdb filetype = ascii offset = 6 stride = 12
+AVSFLD: variable 3 file = wrapper_202.dlg.pdb filetype = ascii offset = 7 stride = 12
+AVSFLD: variable 4 file = wrapper_202.dlg.pdb filetype = ascii offset = 8 stride = 12
+AVSFLD: variable 5 file = wrapper_202.dlg.pdb filetype = ascii offset = 9 stride = 12
+AVSFLD: variable 6 file = wrapper_202.dlg.pdb filetype = ascii offset = 10 stride = 12
+AVSFLD: variable 7 file = wrapper_202.dlg.pdb filetype = ascii offset = 11 stride = 12
 AVSFLD: # end of file
 
 >>> Closing the docking parameter file (DPF)...
-This docking finished at:			10:12 58" a.m., 12/09/2025
+This docking finished at:			10:12 59" a.m., 12/09/2025
 
 
 ________________________________________________________________________________
 
 autodock4: Successful Completion on "66CCFF-R9000P"
 
-Real= 0.63s,  CPU= 0.18s,  System= 0.06s
+Real= 0.64s,  CPU= 0.17s,  System= 0.07s
 ________________________________________________________________________________
 
