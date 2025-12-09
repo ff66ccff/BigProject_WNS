@@ -10,13 +10,13 @@ map N.map
 map NA.map
 map OA.map
 elecmap e.map
-dsolvmap d.map
+desolvmap d.map
 move intermediate1_3d.pdbqt
-about -6.96 -0.14 27.51
-tran0 0.0 0.0 0.0
+about -7.0 -0.5 27.0
+tran0 -7.0 -0.5 27.0
 quaternion0 0 0 0 1
 ga_pop_size 150
 ga_num_evals 2500000
 ga_num_generations 27000
-runs 10
+ga_run 10
 analysis

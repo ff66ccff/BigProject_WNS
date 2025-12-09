@@ -10,7 +10,7 @@
                    Compiled on Feb 20 2022 at 09:48:33
 
 
-This file was created at:			10:12 57" a.m., 12/09/2025
+This file was created at:			9:50 31" p.m., 12/09/2025
                    on host:		"66CCFF-R9000P"
 Current Working Directory = "/mnt/d/PersonalFile/Documents/BigProject/SRC/project/autodock_runs"
 
@@ -20,7 +20,7 @@ Current Working Directory = "/mnt/d/PersonalFile/Documents/BigProject/SRC/projec
       ________________________________________________________________
 
 
-Random number generator was seeded with values 20, 1765246377.
+Random number generator was seeded with values 20, 1765288231.
 Docking parameter file (DPF) used for this docking:		wrapper_101.dpf
 DPF> autodock_parameter_version 4.2
 
@@ -33,23 +33,23 @@ DPF> intelec
 Electrostatic energies will be calculated for all non-bonds between moving atoms.
 DPF> seed 101
 
-Random number generator was seeded with values 101, 1765246377.
+Random number generator was seeded with values 101, 1765288231.
 DPF> ligand_types A C N NA OA
 
 DPF> fld protein.maps.fld
 
 Opening Grid Map Dimensions file:		protein.maps.fld
-Grid Point Spacing =				0.375 Angstroms
+Grid Point Spacing =				1.000 Angstroms
 
-Even Number of User-specified Grid Points =	60 x-points
-						60 y-points
-						60 z-points
+Even Number of User-specified Grid Points =	126 x-points
+						54 y-points
+						126 z-points
 
-Coordinates of Central Grid Point of Maps =	(0.000, 0.000, 0.000)
-Macromolecule file used to create Grid Maps =	protein.pdbqt
+Coordinates of Central Grid Point of Maps =	(-7.000, -0.500, 27.000)
+Macromolecule file used to create Grid Maps =	receptor_current.pdbqt
 Grid Parameter file used to create Grid Maps =	autogrid.gpf
-Minimum coordinates in grid = (-11.250, -11.250, -11.250)
-Maximum coordinates in grid = (11.250, 11.250, 11.250)
+Minimum coordinates in grid = (-70.000, -27.500, -36.000)
+Maximum coordinates in grid = (56.000, 26.500, 90.000)
 
 DPF> map A.map
 
@@ -63,7 +63,7 @@ DPF> map OA.map
 
 DPF> elecmap e.map
 
-DPF> dsolvmap d.map
+DPF> desolvmap d.map
 
 DPF> move intermediate1_3d.pdbqt
 
@@ -74,229 +74,147 @@ Ligand PDBQT file = "intermediate1_3d.pdbqt"
 INPUT LIGAND PDBQT FILE:
 ________________________
 
-INPUT-LIGAND-PDBQT: REMARK  13 active torsions:
+INPUT-LIGAND-PDBQT: REMARK  Name = 2520
+INPUT-LIGAND-PDBQT: REMARK  21 active torsions:
 INPUT-LIGAND-PDBQT: REMARK  status: ('A' for Active; 'I' for Inactive)
-INPUT-LIGAND-PDBQT: REMARK    1  A    between atoms: O_1  and  C_19 
-INPUT-LIGAND-PDBQT: REMARK    2  A    between atoms: O_2  and  C_23 
-INPUT-LIGAND-PDBQT: REMARK    3  A    between atoms: O_3  and  C_27 
-INPUT-LIGAND-PDBQT: REMARK    4  A    between atoms: O_4  and  C_30 
-INPUT-LIGAND-PDBQT: REMARK    5  A    between atoms: N_5  and  C_12 
-INPUT-LIGAND-PDBQT: REMARK    6  A    between atoms: N_5  and  C_18 
-INPUT-LIGAND-PDBQT: REMARK    7  A    between atoms: C_7  and  C_8 
-INPUT-LIGAND-PDBQT: REMARK    8  A    between atoms: C_7  and  C_9 
-INPUT-LIGAND-PDBQT: REMARK    9  A    between atoms: C_7  and  C_11 
-INPUT-LIGAND-PDBQT: REMARK   10  A    between atoms: C_9  and  C_10 
-INPUT-LIGAND-PDBQT: REMARK   11  A    between atoms: C_10  and  C_12 
-INPUT-LIGAND-PDBQT: REMARK   12  A    between atoms: C_18  and  C_22 
-INPUT-LIGAND-PDBQT: REMARK   13  A    between atoms: C_22  and  C_24 
+INPUT-LIGAND-PDBQT: REMARK    1  A    between atoms: O_1  and  C_19
+INPUT-LIGAND-PDBQT: REMARK    2  A    between atoms: O_1  and  C_28
+INPUT-LIGAND-PDBQT: REMARK    3  A    between atoms: O_2  and  C_23
+INPUT-LIGAND-PDBQT: REMARK    4  A    between atoms: O_2  and  C_31
+INPUT-LIGAND-PDBQT: REMARK    5  A    between atoms: O_3  and  C_27
+INPUT-LIGAND-PDBQT: REMARK    6  A    between atoms: O_3  and  C_32
+INPUT-LIGAND-PDBQT: REMARK    7  A    between atoms: O_4  and  C_30
+INPUT-LIGAND-PDBQT: REMARK    8  A    between atoms: O_4  and  C_33
+INPUT-LIGAND-PDBQT: REMARK    9  A    between atoms: N_5  and  C_12
+INPUT-LIGAND-PDBQT: REMARK   10  A    between atoms: N_5  and  C_18
+INPUT-LIGAND-PDBQT: REMARK   11  A    between atoms: N_5  and  C_20
+INPUT-LIGAND-PDBQT: REMARK   12  A    between atoms: C_7  and  C_8
+INPUT-LIGAND-PDBQT: REMARK   13  A    between atoms: C_7  and  C_9
+INPUT-LIGAND-PDBQT: REMARK   14  A    between atoms: C_7  and  C_11
+INPUT-LIGAND-PDBQT: REMARK   15  A    between atoms: C_7  and  C_15
+INPUT-LIGAND-PDBQT: REMARK   16  A    between atoms: C_8  and  C_13
+INPUT-LIGAND-PDBQT: REMARK   17  A    between atoms: C_8  and  C_14
+INPUT-LIGAND-PDBQT: REMARK   18  A    between atoms: C_9  and  C_10
+INPUT-LIGAND-PDBQT: REMARK   19  A    between atoms: C_10  and  C_12
+INPUT-LIGAND-PDBQT: REMARK   20  A    between atoms: C_18  and  C_22
+INPUT-LIGAND-PDBQT: REMARK   21  A    between atoms: C_22  and  C_24
+INPUT-LIGAND-PDBQT: REMARK                            x       y       z     vdW  Elec       q    Type
+INPUT-LIGAND-PDBQT: REMARK                         _______ _______ _______ _____ _____    ______ ____
 INPUT-LIGAND-PDBQT: ROOT
-INPUT-LIGAND-PDBQT: ATOM      1  N   UNL d   1       2.598   0.518   0.000  0.00  0.00    -0.196 NA
-INPUT-LIGAND-PDBQT: ATOM      2  C   UNL d   1       4.598   0.518   0.000  0.00  0.00     0.079 C 
-INPUT-LIGAND-PDBQT: ATOM      3  C   UNL d   1       3.598   0.518   0.000  0.00  0.00     0.074 C 
+INPUT-LIGAND-PDBQT: ATOM      1  C   UNL A   1       2.911   2.953   4.188  0.00  0.00    -0.038 C 
+INPUT-LIGAND-PDBQT: ATOM      2  H   UNL A   1       3.237   2.981   5.232  0.00  0.00    +0.028 HD
+INPUT-LIGAND-PDBQT: ATOM      3  H   UNL A   1       2.642   1.920   3.952  0.00  0.00    +0.028 HD
 INPUT-LIGAND-PDBQT: ENDROOT
-INPUT-LIGAND-PDBQT: BRANCH   2   4
-INPUT-LIGAND-PDBQT: ATOM      4  C   UNL d   1       4.598   1.518   0.000  0.00  0.00     0.004 C 
-INPUT-LIGAND-PDBQT: ATOM      5  C   UNL d   1       5.464   2.018   0.000  0.00  0.00     0.011 C 
-INPUT-LIGAND-PDBQT: ATOM      6  C   UNL d   1       3.732   2.018   0.000  0.00  0.00     0.011 C 
-INPUT-LIGAND-PDBQT: ENDBRANCH   2   4
-INPUT-LIGAND-PDBQT: BRANCH   2   7
-INPUT-LIGAND-PDBQT: ATOM      7  C   UNL d   1       5.598   0.518   0.000  0.00  0.00     0.031 C 
+INPUT-LIGAND-PDBQT: BRANCH   1   4
+INPUT-LIGAND-PDBQT: ATOM      4  C   UNL A   1       4.123   3.344   3.304  0.00  0.00    -0.001 C 
+INPUT-LIGAND-PDBQT: ATOM      5  H   UNL A   1       3.853   3.311   2.240  0.00  0.00    +0.043 HD
+INPUT-LIGAND-PDBQT: ATOM      6  H   UNL A   1       4.354   4.393   3.531  0.00  0.00    +0.043 HD
+INPUT-LIGAND-PDBQT: BRANCH   4   7
+INPUT-LIGAND-PDBQT: ATOM      7  N   UNL A   1       5.336   2.511   3.561  0.00  0.00    -0.305 NA
 INPUT-LIGAND-PDBQT: BRANCH   7   8
-INPUT-LIGAND-PDBQT: ATOM      8  C   UNL d   1       6.098   1.384   0.000  0.00  0.00     0.021 C 
-INPUT-LIGAND-PDBQT: BRANCH   8   9
-INPUT-LIGAND-PDBQT: ATOM      9  C   UNL d   1       7.098   1.384   0.000  0.00  0.00     0.116 C 
-INPUT-LIGAND-PDBQT: BRANCH   9  10
-INPUT-LIGAND-PDBQT: ATOM     10  N   UNL d   1       7.598   2.250   0.000  0.00  0.00    -0.416 N 
-INPUT-LIGAND-PDBQT: ATOM     11  C   UNL d   1       7.098   3.116   0.000  0.00  0.00     0.143 C 
-INPUT-LIGAND-PDBQT: BRANCH  10  12
-INPUT-LIGAND-PDBQT: ATOM     12  C   UNL d   1       8.598   2.250   0.000  0.00  0.00     0.121 C 
-INPUT-LIGAND-PDBQT: BRANCH  12  13
-INPUT-LIGAND-PDBQT: ATOM     13  C   UNL d   1       9.098   3.116   0.000  0.00  0.00     0.058 C 
-INPUT-LIGAND-PDBQT: BRANCH  13  14
-INPUT-LIGAND-PDBQT: ATOM     14  C   UNL d   1      10.098   3.116   0.000  0.00  0.00    -0.054 A 
-INPUT-LIGAND-PDBQT: ATOM     15  C   UNL d   1      10.598   2.250   0.000  0.00  0.00     0.046 A 
-INPUT-LIGAND-PDBQT: ATOM     16  C   UNL d   1      11.598   2.250   0.000  0.00  0.00     0.102 A 
-INPUT-LIGAND-PDBQT: ATOM     17  C   UNL d   1      12.098   3.116   0.000  0.00  0.00     0.101 A 
-INPUT-LIGAND-PDBQT: ATOM     18  C   UNL d   1      11.598   3.982   0.000  0.00  0.00     0.040 A 
-INPUT-LIGAND-PDBQT: ATOM     19  C   UNL d   1      10.598   3.982   0.000  0.00  0.00     0.010 A 
-INPUT-LIGAND-PDBQT: BRANCH  16  20
-INPUT-LIGAND-PDBQT: ATOM     20  O   UNL d   1      12.098   1.384   0.000  0.00  0.00    -0.353 OA
-INPUT-LIGAND-PDBQT: ATOM     21  C   UNL d   1      13.098   1.384   0.000  0.00  0.00     0.210 C 
-INPUT-LIGAND-PDBQT: ENDBRANCH  16  20
-INPUT-LIGAND-PDBQT: BRANCH  17  22
-INPUT-LIGAND-PDBQT: ATOM     22  O   UNL d   1      13.098   3.116   0.000  0.00  0.00    -0.353 OA
-INPUT-LIGAND-PDBQT: ATOM     23  C   UNL d   1      13.598   3.982   0.000  0.00  0.00     0.210 C 
-INPUT-LIGAND-PDBQT: ENDBRANCH  17  22
-INPUT-LIGAND-PDBQT: ENDBRANCH  13  14
-INPUT-LIGAND-PDBQT: ENDBRANCH  12  13
-INPUT-LIGAND-PDBQT: ENDBRANCH  10  12
-INPUT-LIGAND-PDBQT: ENDBRANCH   9  10
-INPUT-LIGAND-PDBQT: ENDBRANCH   8   9
+INPUT-LIGAND-PDBQT: ATOM      8  C   UNL A   1       6.539   3.230   3.127  0.00  0.00    -0.013 C 
+INPUT-LIGAND-PDBQT: ATOM      9  H   UNL A   1       6.585   3.355   2.039  0.00  0.00    +0.039 HD
+INPUT-LIGAND-PDBQT: ATOM     10  H   UNL A   1       6.589   4.223   3.589  0.00  0.00    +0.039 HD
+INPUT-LIGAND-PDBQT: ATOM     11  H   UNL A   1       7.447   2.716   3.461  0.00  0.00    +0.039 HD
 INPUT-LIGAND-PDBQT: ENDBRANCH   7   8
-INPUT-LIGAND-PDBQT: ENDBRANCH   2   7
-INPUT-LIGAND-PDBQT: BRANCH   2  24
-INPUT-LIGAND-PDBQT: ATOM     24  C   UNL d   1       4.598  -0.482   0.000  0.00  0.00    -0.032 A 
-INPUT-LIGAND-PDBQT: ATOM     25  C   UNL d   1       3.732  -0.982   0.000  0.00  0.00     0.048 A 
-INPUT-LIGAND-PDBQT: ATOM     26  C   UNL d   1       3.732  -1.982   0.000  0.00  0.00     0.102 A 
-INPUT-LIGAND-PDBQT: ATOM     27  C   UNL d   1       4.598  -2.482   0.000  0.00  0.00     0.101 A 
-INPUT-LIGAND-PDBQT: ATOM     28  C   UNL d   1       5.464  -1.982   0.000  0.00  0.00     0.040 A 
-INPUT-LIGAND-PDBQT: ATOM     29  C   UNL d   1       5.464  -0.982   0.000  0.00  0.00     0.012 A 
-INPUT-LIGAND-PDBQT: BRANCH  26  30
-INPUT-LIGAND-PDBQT: ATOM     30  O   UNL d   1       2.866  -2.482   0.000  0.00  0.00    -0.353 OA
-INPUT-LIGAND-PDBQT: ATOM     31  C   UNL d   1       2.000  -1.982   0.000  0.00  0.00     0.210 C 
-INPUT-LIGAND-PDBQT: ENDBRANCH  26  30
-INPUT-LIGAND-PDBQT: BRANCH  27  32
-INPUT-LIGAND-PDBQT: ATOM     32  O   UNL d   1       4.598  -3.482   0.000  0.00  0.00    -0.353 OA
-INPUT-LIGAND-PDBQT: ATOM     33  C   UNL d   1       5.464  -3.982   0.000  0.00  0.00     0.210 C 
-INPUT-LIGAND-PDBQT: ENDBRANCH  27  32
-INPUT-LIGAND-PDBQT: ENDBRANCH   2  24
-INPUT-LIGAND-PDBQT: TORSDOF 13
-________________________________________________________________________________
-
-Total charge on ligand                               =	+0.001 e
-REMARK  13 active torsions:
-REMARK  status: ('A' for Active; 'I' for Inactive)
-REMARK    1  A    between atoms: O_1  and  C_19 
-REMARK    2  A    between atoms: O_2  and  C_23 
-REMARK    3  A    between atoms: O_3  and  C_27 
-REMARK    4  A    between atoms: O_4  and  C_30 
-REMARK    5  A    between atoms: N_5  and  C_12 
-REMARK    6  A    between atoms: N_5  and  C_18 
-REMARK    7  A    between atoms: C_7  and  C_8 
-REMARK    8  A    between atoms: C_7  and  C_9 
-REMARK    9  A    between atoms: C_7  and  C_11 
-REMARK   10  A    between atoms: C_9  and  C_10 
-REMARK   11  A    between atoms: C_10  and  C_12 
-REMARK   12  A    between atoms: C_18  and  C_22 
-REMARK   13  A    between atoms: C_22  and  C_24 
-
-
-Number of Rotatable Bonds in Small Molecule =	13 torsions
-Number of atoms in ligand:  33
-
-Number of non-hydrogen atoms in ligand:  33
-
-Number of vibrational degrees of freedom of ligand:  93
-
-
-Number of torsional degrees of freedom = 13
-Estimated loss of torsional free energy upon binding = +3.8779 kcal/mol
-
-
-DPF> about 0.0 0.0 0.0
-
-Small molecule center of rotation =	(+0.000, +0.000, +0.000)
-
-DPF> tran0 0.0 0.0 0.0
-
-Initial translation =			(0.000, 0.000, 0.000) Angstroms
-DPF> quaternion0 0 0 0 1
-
-Initial quaternion,  (x,y,z,w) =	( 0.000, 0.000, 0.000, 1.000 ),
-DPF> analysis
-
-
-		CLUSTER ANALYSIS OF CONFORMATIONS
-		_________________________________
-
-Number of conformations = 0
-
-RMSD cluster analysis will be performed using the ligand atoms only (33 / 33 total atoms).
-
-Sorry!  Unable to perform cluster analysis, because not enough conformations were generated.
-MODEL        1
-USER    Run = 1
-USER    Cluster Rank = 1
-USER    Number of conformations in this cluster = 1
-USER  
-USER    RMSD from reference structure       = 0.000 A
-USER  
-USER    Estimated Free Energy of Binding    =  +92.80 kcal/mol  [=(1)+(2)+(3)-(4)]
-USER    
-USER    (1) Final Intermolecular Energy     =  +88.92 kcal/mol
-USER        vdW + Hbond + desolv Energy     =  +88.92 kcal/mol
-USER        Electrostatic Energy            =   +0.00 kcal/mol
-USER    (2) Final Total Internal Energy     =   +3.91e+07 kcal/mol
-USER    (3) Torsional Free Energy           =   +3.88 kcal/mol
-USER    (4) Unbound System's Energy  [=(2)] =   +3.91e+07 kcal/mol
-USER    
-USER    
-USER  
-USER    DPF = wrapper_101.dpf
-USER    NEWDPF move	intermediate1_3d.pdbqt
-USER    NEWDPF about	0.000000 0.000000 0.000000
-USER    NEWDPF tran0	60218101930313001024821916197180798577244553297581557255835324315236023391126193023945189698133636844761887643808288329689689347377480700388268685918208.000000 0.000000 0.000000
-USER    NEWDPF axisangle0	1.000000 0.000000 0.000000 0.000000
-USER    NEWDPF quaternion0	0.000000 0.000000 0.000000 0.000000
-USER    NEWDPF dihe0	
-USER  
-USER                              x       y       z    vdW   Elec        q     RMS 
-ATOM      1  N   UNL d   1       0.000   0.000   0.000 +1.14 -0.00    -0.196     0.000
-ATOM      2  C   UNL d   1       0.000   0.000   0.000 +3.08 +0.00    +0.079     0.000
-ATOM      3  C   UNL d   1       0.000   0.000   0.000 +3.07 +0.00    +0.074     0.000
-ATOM      4  C   UNL d   1       0.000   0.000   0.000 +3.02 +0.00    +0.004     0.000
-ATOM      5  C   UNL d   1       0.000   0.000   0.000 +3.02 +0.00    +0.011     0.000
-ATOM      6  C   UNL d   1       0.000   0.000   0.000 +3.02 +0.00    +0.011     0.000
-ATOM      7  C   UNL d   1       0.000   0.000   0.000 +3.04 +0.00    +0.031     0.000
-ATOM      8  C   UNL d   1       0.000   0.000   0.000 +3.03 +0.00    +0.021     0.000
-ATOM      9  C   UNL d   1       0.000   0.000   0.000 +3.11 +0.00    +0.116     0.000
-ATOM     10  N   UNL d   1       0.000   0.000   0.000 +1.32 -0.00    -0.416     0.000
-ATOM     11  C   UNL d   1       0.000   0.000   0.000 +3.13 +0.00    +0.143     0.000
-ATOM     12  C   UNL d   1       0.000   0.000   0.000 +3.11 +0.00    +0.121     0.000
-ATOM     13  C   UNL d   1       0.000   0.000   0.000 +3.06 +0.00    +0.058     0.000
-ATOM     14  C   UNL d   1       0.000   0.000   0.000 +3.13 -0.00    -0.054     0.000
-ATOM     15  C   UNL d   1       0.000   0.000   0.000 +3.12 +0.00    +0.046     0.000
-ATOM     16  C   UNL d   1       0.000   0.000   0.000 +3.17 +0.00    +0.102     0.000
-ATOM     17  C   UNL d   1       0.000   0.000   0.000 +3.16 +0.00    +0.101     0.000
-ATOM     18  C   UNL d   1       0.000   0.000   0.000 +3.11 +0.00    +0.040     0.000
-ATOM     19  C   UNL d   1       0.000   0.000   0.000 +3.09 +0.00    +0.010     0.000
-ATOM     20  O   UNL d   1       0.000   0.000   0.000 +0.62 -0.00    -0.353     0.000
-ATOM     21  C   UNL d   1       0.000   0.000   0.000 +3.19 +0.00    +0.210     0.000
-ATOM     22  O   UNL d   1       0.000   0.000   0.000 +0.62 -0.00    -0.353     0.000
-ATOM     23  C   UNL d   1       0.000   0.000   0.000 +3.19 +0.00    +0.210     0.000
-ATOM     24  C   UNL d   1       0.000   0.000   0.000 +3.11 -0.00    -0.032     0.000
-ATOM     25  C   UNL d   1       0.000   0.000   0.000 +3.12 +0.00    +0.048     0.000
-ATOM     26  C   UNL d   1       0.000   0.000   0.000 +3.17 +0.00    +0.102     0.000
-ATOM     27  C   UNL d   1       0.000   0.000   0.000 +3.16 +0.00    +0.101     0.000
-ATOM     28  C   UNL d   1       0.000   0.000   0.000 +3.11 +0.00    +0.040     0.000
-ATOM     29  C   UNL d   1       0.000   0.000   0.000 +3.09 +0.00    +0.012     0.000
-ATOM     30  O   UNL d   1       0.000   0.000   0.000 +0.62 -0.00    -0.353     0.000
-ATOM     31  C   UNL d   1       0.000   0.000   0.000 +3.19 +0.00    +0.210     0.000
-ATOM     32  O   UNL d   1       0.000   0.000   0.000 +0.62 -0.00    -0.353     0.000
-ATOM     33  C   UNL d   1       0.000   0.000   0.000 +3.19 +0.00    +0.210     0.000
-TER
-ENDMDL
-
-
-AVSFLD: # AVS field file
-AVSFLD: #
-AVSFLD: # Created by AutoDock
-AVSFLD: #
-AVSFLD: ndim=2           # number of dimensions in the field
-AVSFLD: nspace=1         # number of physical coordinates
-AVSFLD: veclen=7         # vector size
-AVSFLD: dim1=33          # atoms
-AVSFLD: dim2=1           # conformations
-AVSFLD: data=Real       # data type (byte,integer,Real,double)
-AVSFLD: field=uniform    # field coordinate layout
-AVSFLD: label= x y z vdW Elec q RMS
-AVSFLD: variable 1 file = wrapper_101.dlg.pdb filetype = ascii offset = 5 stride = 12
-AVSFLD: variable 2 file = wrapper_101.dlg.pdb filetype = ascii offset = 6 stride = 12
-AVSFLD: variable 3 file = wrapper_101.dlg.pdb filetype = ascii offset = 7 stride = 12
-AVSFLD: variable 4 file = wrapper_101.dlg.pdb filetype = ascii offset = 8 stride = 12
-AVSFLD: variable 5 file = wrapper_101.dlg.pdb filetype = ascii offset = 9 stride = 12
-AVSFLD: variable 6 file = wrapper_101.dlg.pdb filetype = ascii offset = 10 stride = 12
-AVSFLD: variable 7 file = wrapper_101.dlg.pdb filetype = ascii offset = 11 stride = 12
-AVSFLD: # end of file
-
->>> Closing the docking parameter file (DPF)...
-This docking finished at:			10:12 58" a.m., 12/09/2025
-
-
-________________________________________________________________________________
-
-autodock4: Successful Completion on "66CCFF-R9000P"
-
-Real= 0.63s,  CPU= 0.18s,  System= 0.06s
+INPUT-LIGAND-PDBQT: BRANCH   7  12
+INPUT-LIGAND-PDBQT: ATOM     12  C   UNL A   1       5.231   1.161   2.935  0.00  0.00    +0.003 C 
+INPUT-LIGAND-PDBQT: ATOM     13  H   UNL A   1       4.457   0.612   3.481  0.00  0.00    +0.043 HD
+INPUT-LIGAND-PDBQT: ATOM     14  H   UNL A   1       4.890   1.273   1.899  0.00  0.00    +0.043 HD
+INPUT-LIGAND-PDBQT: BRANCH  12  15
+INPUT-LIGAND-PDBQT: ATOM     15  C   UNL A   1       6.508   0.264   2.920  0.00  0.00    -0.015 C 
+INPUT-LIGAND-PDBQT: ATOM     16  H   UNL A   1       7.283   0.786   2.342  0.00  0.00    +0.033 HD
+INPUT-LIGAND-PDBQT: ATOM     17  H   UNL A   1       6.885   0.145   3.943  0.00  0.00    +0.033 HD
+INPUT-LIGAND-PDBQT: BRANCH  15  18
+INPUT-LIGAND-PDBQT: ATOM     18  C   UNL A   1       6.399  -1.118   2.278  0.00  0.00    -0.043 A 
+INPUT-LIGAND-PDBQT: ATOM     19  C   UNL A   1       5.206  -1.648   1.758  0.00  0.00    -0.013 A 
+INPUT-LIGAND-PDBQT: ATOM     20  C   UNL A   1       7.563  -1.887   2.140  0.00  0.00    -0.055 A 
+INPUT-LIGAND-PDBQT: ATOM     21  C   UNL A   1       5.179  -2.853   1.016  0.00  0.00    +0.162 A 
+INPUT-LIGAND-PDBQT: ATOM     22  C   UNL A   1       7.541  -3.100   1.444  0.00  0.00    -0.016 A 
+INPUT-LIGAND-PDBQT: ATOM     23  C   UNL A   1       6.366  -3.581   0.852  0.00  0.00    +0.162 A 
+INPUT-LIGAND-PDBQT: ATOM     24  H   UNL A   1       4.284  -1.107   1.933  0.00  0.00    +0.066 HD
+INPUT-LIGAND-PDBQT: ATOM     25  H   UNL A   1       8.507  -1.542   2.558  0.00  0.00    +0.062 HD
+INPUT-LIGAND-PDBQT: ATOM     26  H   UNL A   1       8.462  -3.673   1.344  0.00  0.00    +0.066 HD
+INPUT-LIGAND-PDBQT: BRANCH  23  27
+INPUT-LIGAND-PDBQT: ATOM     27  O   UNL A   1       6.563  -4.757   0.171  0.00  0.00    -0.491 OA
+INPUT-LIGAND-PDBQT: BRANCH  27  28
+INPUT-LIGAND-PDBQT: ATOM     28  C   UNL A   1       5.560  -5.205  -0.733  0.00  0.00    +0.079 C 
+INPUT-LIGAND-PDBQT: ATOM     29  H   UNL A   1       4.675  -5.559  -0.198  0.00  0.00    +0.066 HD
+INPUT-LIGAND-PDBQT: ATOM     30  H   UNL A   1       5.317  -4.441  -1.480  0.00  0.00    +0.066 HD
+INPUT-LIGAND-PDBQT: ATOM     31  H   UNL A   1       5.963  -6.067  -1.275  0.00  0.00    +0.066 HD
+INPUT-LIGAND-PDBQT: ENDBRANCH  27  28
+INPUT-LIGAND-PDBQT: ENDBRANCH  23  27
+INPUT-LIGAND-PDBQT: BRANCH  21  32
+INPUT-LIGAND-PDBQT: ATOM     32  O   UNL A   1       4.043  -3.348   0.440  0.00  0.00    -0.491 OA
+INPUT-LIGAND-PDBQT: BRANCH  32  33
+INPUT-LIGAND-PDBQT: ATOM     33  C   UNL A   1       2.841  -2.595   0.496  0.00  0.00    +0.079 C 
+INPUT-LIGAND-PDBQT: ATOM     34  H   UNL A   1       2.349  -2.743   1.462  0.00  0.00    +0.066 HD
+INPUT-LIGAND-PDBQT: ATOM     35  H   UNL A   1       2.995  -1.531   0.285  0.00  0.00    +0.066 HD
+INPUT-LIGAND-PDBQT: ATOM     36  H   UNL A   1       2.178  -2.977  -0.285  0.00  0.00    +0.066 HD
+INPUT-LIGAND-PDBQT: ENDBRANCH  32  33
+INPUT-LIGAND-PDBQT: ENDBRANCH  21  32
+INPUT-LIGAND-PDBQT: ENDBRANCH  15  18
+INPUT-LIGAND-PDBQT: ENDBRANCH  12  15
+INPUT-LIGAND-PDBQT: ENDBRANCH   7  12
+INPUT-LIGAND-PDBQT: ENDBRANCH   4   7
+INPUT-LIGAND-PDBQT: ENDBRANCH   1   4
+INPUT-LIGAND-PDBQT: BRANCH   1  37
+INPUT-LIGAND-PDBQT: ATOM     37  C   UNL A   1       1.653   3.869   4.015  0.00  0.00    -0.029 C 
+INPUT-LIGAND-PDBQT: ATOM     38  H   UNL A   1       1.383   3.867   2.949  0.00  0.00    +0.028 HD
+INPUT-LIGAND-PDBQT: ATOM     39  H   UNL A   1       1.937   4.909   4.218  0.00  0.00    +0.028 HD
+INPUT-LIGAND-PDBQT: BRANCH  37  40
+INPUT-LIGAND-PDBQT: ATOM     40  C   UNL A   1       0.353   3.478   4.903  0.00  0.00    +0.085 C 
+INPUT-LIGAND-PDBQT: BRANCH  40  41
+INPUT-LIGAND-PDBQT: ATOM     41  C   UNL A   1       0.001   2.042   4.417  0.00  0.00    -0.024 A 
+INPUT-LIGAND-PDBQT: ATOM     42  C   UNL A   1      -0.462   1.856   3.096  0.00  0.00    -0.012 A 
+INPUT-LIGAND-PDBQT: ATOM     43  C   UNL A   1       0.267   0.879   5.156  0.00  0.00    -0.053 A 
+INPUT-LIGAND-PDBQT: ATOM     44  C   UNL A   1      -0.594   0.589   2.504  0.00  0.00    +0.162 A 
+INPUT-LIGAND-PDBQT: ATOM     45  C   UNL A   1       0.060  -0.390   4.606  0.00  0.00    -0.016 A 
+INPUT-LIGAND-PDBQT: ATOM     46  C   UNL A   1      -0.375  -0.549   3.287  0.00  0.00    +0.162 A 
+INPUT-LIGAND-PDBQT: ATOM     47  H   UNL A   1      -0.687   2.734   2.492  0.00  0.00    +0.066 HD
+INPUT-LIGAND-PDBQT: ATOM     48  H   UNL A   1       0.675   0.915   6.162  0.00  0.00    +0.062 HD
+INPUT-LIGAND-PDBQT: ATOM     49  H   UNL A   1       0.270  -1.273   5.208  0.00  0.00    +0.066 HD
+INPUT-LIGAND-PDBQT: BRANCH  44  50
+INPUT-LIGAND-PDBQT: ATOM     50  O   UNL A   1      -0.907   0.443   1.178  0.00  0.00    -0.491 OA
+INPUT-LIGAND-PDBQT: BRANCH  50  51
+INPUT-LIGAND-PDBQT: ATOM     51  C   UNL A   1      -0.384   1.456   0.321  0.00  0.00    +0.079 C 
+INPUT-LIGAND-PDBQT: ATOM     52  H   UNL A   1      -0.424   1.085  -0.706  0.00  0.00    +0.066 HD
+INPUT-LIGAND-PDBQT: ATOM     53  H   UNL A   1      -0.998   2.362   0.369  0.00  0.00    +0.066 HD
+INPUT-LIGAND-PDBQT: ATOM     54  H   UNL A   1       0.665   1.685   0.552  0.00  0.00    +0.066 HD
+INPUT-LIGAND-PDBQT: ENDBRANCH  50  51
+INPUT-LIGAND-PDBQT: ENDBRANCH  44  50
+INPUT-LIGAND-PDBQT: BRANCH  46  55
+INPUT-LIGAND-PDBQT: ATOM     55  O   UNL A   1      -0.441  -1.858   2.888  0.00  0.00    -0.491 OA
+INPUT-LIGAND-PDBQT: BRANCH  55  56
+INPUT-LIGAND-PDBQT: ATOM     56  C   UNL A   1      -1.424  -2.173   1.910  0.00  0.00    +0.079 C 
+INPUT-LIGAND-PDBQT: ATOM     57  H   UNL A   1      -2.380  -1.676   2.108  0.00  0.00    +0.066 HD
+INPUT-LIGAND-PDBQT: ATOM     58  H   UNL A   1      -1.055  -1.952   0.905  0.00  0.00    +0.066 HD
+INPUT-LIGAND-PDBQT: ATOM     59  H   UNL A   1      -1.597  -3.253   1.957  0.00  0.00    +0.066 HD
+INPUT-LIGAND-PDBQT: ENDBRANCH  55  56
+INPUT-LIGAND-PDBQT: ENDBRANCH  46  55
+INPUT-LIGAND-PDBQT: ENDBRANCH  40  41
+INPUT-LIGAND-PDBQT: BRANCH  40  60
+INPUT-LIGAND-PDBQT: ATOM     60  C   UNL A   1       0.722   3.588   6.435  0.00  0.00    -0.024 C 
+INPUT-LIGAND-PDBQT: ATOM     61  H   UNL A   1       1.539   2.883   6.637  0.00  0.00    +0.031 HD
+INPUT-LIGAND-PDBQT: BRANCH  60  62
+INPUT-LIGAND-PDBQT: ATOM     62  C   UNL A   1      -0.405   3.219   7.411  0.00  0.00    -0.061 C 
+INPUT-LIGAND-PDBQT: ATOM     63  H   UNL A   1      -0.819   2.222   7.221  0.00  0.00    +0.023 HD
+INPUT-LIGAND-PDBQT: ATOM     64  H   UNL A   1      -0.018   3.198   8.436  0.00  0.00    +0.023 HD
+INPUT-LIGAND-PDBQT: ATOM     65  H   UNL A   1      -1.227   3.937   7.376  0.00  0.00    +0.023 HD
+INPUT-LIGAND-PDBQT: ENDBRANCH  60  62
+INPUT-LIGAND-PDBQT: BRANCH  60  66
+INPUT-LIGAND-PDBQT: ATOM     66  C   UNL A   1       1.267   4.966   6.854  0.00  0.00    -0.061 C 
+INPUT-LIGAND-PDBQT: ATOM     67  H   UNL A   1       0.527   5.756   6.699  0.00  0.00    +0.023 HD
+INPUT-LIGAND-PDBQT: ATOM     68  H   UNL A   1       1.534   4.962   7.918  0.00  0.00    +0.023 HD
+INPUT-LIGAND-PDBQT: ATOM     69  H   UNL A   1       2.179   5.230   6.313  0.00  0.00    +0.023 HD
+INPUT-LIGAND-PDBQT: ENDBRANCH  60  66
+INPUT-LIGAND-PDBQT: ENDBRANCH  40  60
+INPUT-LIGAND-PDBQT: BRANCH  40  71
+INPUT-LIGAND-PDBQT: ATOM     70  N   UNL A   1      -1.715   5.204   4.209  0.00  0.00    -0.196 NA
+INPUT-LIGAND-PDBQT: ATOM     71  C   UNL A   1      -0.777   4.421   4.524  0.00  0.00    +0.074 C 
+INPUT-LIGAND-PDBQT: ENDBRANCH  40  71
+INPUT-LIGAND-PDBQT: ENDBRANCH  37  40
+INPUT-LIGAND-PDBQT: ENDBRANCH   1  37
+INPUT-LIGAND-PDBQT: TORSDOF 21
 ________________________________________________________________________________
 

@@ -22,16 +22,26 @@ receptor:
   seed: 20231129
 
 autogrid:
-  npts: [60, 60, 60]
-  center: [0.0, 0.0, 0.0]
-  spacing: 0.375
+  # Full protein surface coverage (protein size: 243x52x205 Å)
+  # AutoDock4 max is 126 points per dimension, using larger spacing
+  npts: [126, 54, 126]  # Limited by AutoDock4 memory
+  center: [-7.0, -0.5, 27.0]  # Protein geometric center
+  spacing: 1.0  # Larger spacing to cover full protein (126*1.0 = 126 Å per axis)
+
+# Sc2 parameters for blind surface mapping
+sc2:
+  x_atom_epsilon: 1.0e-4   # kcal/mol
+  x_atom_rmin: 3.6         # Å
+  masking_radius: 3.5      # Å
 
 wrapper:
   script: "scripts/run_autodock_batch.py"
-  seeds: [101, 202, 303, 404, 505]
+  seeds: [101, 202, 303, 404, 505, 606, 707, 808, 909, 1010]  # More seeds for full coverage
   output_dir: "autodock_runs"
   template_dir: "scripts/templates"
   autogrid_log: "autodock_runs/autogrid.log"
+  max_cycles: 50  # Maximum docking cycles
+  min_ligand_distance: 2.0  # Penetration filter threshold (Å)
 
 ambertools:
   ligand_script: "scripts/ligand_param.sh"

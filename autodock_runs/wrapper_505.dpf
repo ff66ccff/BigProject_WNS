@@ -9,10 +9,8 @@ map C.map
 map N.map
 map NA.map
 map OA.map
-elecmap e.map
-dsolvmap d.map
 move intermediate1_3d.pdbqt
-about 0.0 0.0 0.0
-tran0 0.0 0.0 0.0
+about -7.0 -0.5 27.0
+tran0 -7.0 -0.5 27.0
 quaternion0 0 0 0 1
 analysis

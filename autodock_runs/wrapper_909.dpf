@@ -1,7 +1,7 @@
 autodock_parameter_version 4.2
 outlev 1
 intelec
-seed 202
+seed 909
 ligand_types A C N NA OA
 fld protein.maps.fld
 map A.map

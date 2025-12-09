@@ -2,18 +2,18 @@
 #
 # AutoDock Atomic Affinity and Electrostatic Grids
 #
-# Created by /usr/bin/autogrid4.
+# Created by autogrid4.
 #
-#SPACING 0.375
-#NELEMENTS 60 60 60
-#CENTER -6.960 -0.140 27.510
-#MACROMOLECULE protein.pdbqt
+#SPACING 1.000
+#NELEMENTS 126 54 126
+#CENTER -7.000 -0.500 27.000
+#MACROMOLECULE receptor_current.pdbqt
 #GRID_PARAMETER_FILE autogrid.gpf
 #
 ndim=3			# number of dimensions in the field
-dim1=61			# number of x-elements
-dim2=61			# number of y-elements
-dim3=61			# number of z-elements
+dim1=127			# number of x-elements
+dim2=55			# number of y-elements
+dim3=127			# number of z-elements
 nspace=3		# number of physical coordinates per point
 veclen=7		# number of affinity values at each point
 data=float		# data type (byte, integer, float, double)

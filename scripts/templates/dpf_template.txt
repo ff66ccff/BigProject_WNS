@@ -5,8 +5,14 @@ seed ${seed}
 ligand_types ${ligand_types}
 fld ${gridfld}
 ${maps}
+elecmap e.map
+desolvmap d.map
 move ${ligand_pdbqt}
 about ${center_x} ${center_y} ${center_z}
 tran0 ${center_x} ${center_y} ${center_z}
 quaternion0 0 0 0 1
+ga_pop_size 150
+ga_num_evals 2500000
+ga_num_generations 27000
+ga_run 10
 analysis

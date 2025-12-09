@@ -1,16 +1,20 @@
 #!/usr/bin/env python3
-"""Wrap 'n' Shake docking pipeline: sequential docking with atom masking."""
+"""Wrap 'n' Shake docking pipeline: sequential docking with atom masking.
+
+Supports checkpointing - can be interrupted and resumed from the last completed iteration.
+"""
 
 from __future__ import annotations
 
 import argparse
+import json
 import os
 import shutil
 import subprocess
 import sys
 from pathlib import Path
 from string import Template
-from typing import Dict, List
+from typing import Dict, List, Optional
 
 try:
     import yaml  # type: ignore
@@ -19,6 +23,79 @@ except ImportError as exc:  # pragma: no cover
 
 # Import our masking function
 from mask_pdbqt import mask_receptor
+
+
+class CheckpointState:
+    """Manages checkpoint state for resumable docking."""
+    
+    def __init__(self, checkpoint_file: Path):
+        self.checkpoint_file = checkpoint_file
+        self.state = {
+            "completed_seeds": [],
+            "docked_ligand_files": [],
+            "current_receptor": None,
+            "autogrid_complete": False,
+            "successful_docks": 0,
+        }
+    
+    def load(self) -> bool:
+        """Load checkpoint state from file. Returns True if loaded successfully."""
+        if self.checkpoint_file.exists():
+            try:
+                with self.checkpoint_file.open("r", encoding="utf-8") as f:
+                    self.state = json.load(f)
+                print(f"[CHECKPOINT] Resuming from checkpoint: {len(self.state['completed_seeds'])} seeds completed")
+                return True
+            except (json.JSONDecodeError, KeyError) as e:
+                print(f"[CHECKPOINT] Warning: Could not load checkpoint ({e}), starting fresh")
+                return False
+        return False
+    
+    def save(self) -> None:
+        """Save current state to checkpoint file."""
+        with self.checkpoint_file.open("w", encoding="utf-8") as f:
+            json.dump(self.state, f, indent=2)
+        print(f"[CHECKPOINT] State saved: {len(self.state['completed_seeds'])} seeds completed")
+    
+    def mark_autogrid_complete(self) -> None:
+        self.state["autogrid_complete"] = True
+        self.save()
+    
+    def is_autogrid_complete(self) -> bool:
+        return self.state.get("autogrid_complete", False)
+    
+    def is_seed_completed(self, seed: int) -> bool:
+        return seed in self.state["completed_seeds"]
+    
+    def mark_seed_completed(self, seed: int, ligand_file: Optional[str], receptor_file: str) -> None:
+        self.state["completed_seeds"].append(seed)
+        if ligand_file:
+            self.state["docked_ligand_files"].append(ligand_file)
+            self.state["successful_docks"] = len(self.state["docked_ligand_files"])
+        self.state["current_receptor"] = receptor_file
+        self.save()
+    
+    def get_current_receptor(self) -> Optional[str]:
+        return self.state.get("current_receptor")
+    
+    def get_docked_ligands(self) -> List[str]:
+        return self.state.get("docked_ligand_files", [])
+    
+    def get_successful_docks(self) -> int:
+        return self.state.get("successful_docks", 0)
+    
+    def reset(self) -> None:
+        """Reset checkpoint state."""
+        self.state = {
+            "completed_seeds": [],
+            "docked_ligand_files": [],
+            "current_receptor": None,
+            "autogrid_complete": False,
+            "successful_docks": 0,
+        }
+        if self.checkpoint_file.exists():
+            self.checkpoint_file.unlink()
+        print("[CHECKPOINT] State reset")
 
 
 def to_wsl_path(path: Path) -> str:
@@ -184,8 +261,14 @@ def check_ligand_clash(new_ligand_path: Path, existing_ligands: List[Path],
     return False  # No clash
 
 
-def run_wrap_n_shake_docking(config: Dict, dry_run: bool = False) -> None:
-    """Run Wrap 'n' Shake docking pipeline."""
+def run_wrap_n_shake_docking(config: Dict, dry_run: bool = False, reset_checkpoint: bool = False) -> None:
+    """Run Wrap 'n' Shake docking pipeline with checkpoint support.
+    
+    Args:
+        config: Configuration dictionary
+        dry_run: If True, only print commands without executing
+        reset_checkpoint: If True, reset checkpoint and start fresh
+    """
     scripts_dir = Path(__file__).resolve().parent
     working_dir = (scripts_dir / config["paths"]["working_dir"]).resolve()
     template_dir = (working_dir / config["wrapper"]["template_dir"]).resolve()
@@ -195,9 +278,22 @@ def run_wrap_n_shake_docking(config: Dict, dry_run: bool = False) -> None:
     output_dir = working_dir / config["wrapper"]["output_dir"]
     output_dir.mkdir(parents=True, exist_ok=True)
     
-    # Copy original receptor to working directory
-    receptor_current = output_dir / "receptor_current.pdbqt"
-    shutil.copy2(receptor_pdbqt, receptor_current)
+    # Initialize checkpoint system
+    checkpoint_file = output_dir / "docking_checkpoint.json"
+    checkpoint = CheckpointState(checkpoint_file)
+    
+    if reset_checkpoint:
+        checkpoint.reset()
+    else:
+        checkpoint.load()
+    
+    # Determine current receptor (from checkpoint or original)
+    if checkpoint.get_current_receptor():
+        receptor_current = Path(checkpoint.get_current_receptor())
+        print(f"[RESUME] Using masked receptor from checkpoint: {receptor_current.name}")
+    else:
+        receptor_current = output_dir / "receptor_current.pdbqt"
+        shutil.copy2(receptor_pdbqt, receptor_current)
     
     # Setup AutoGrid
     gpf_path = output_dir / "autogrid.gpf"
@@ -226,30 +322,42 @@ def run_wrap_n_shake_docking(config: Dict, dry_run: bool = False) -> None:
     gpf_content = render_template(template_dir / "gpf_template.txt", gpf_mapping)
     write_file(gpf_path, gpf_content)
     
-    # Run AutoGrid
-    autogrid_exe = config["paths"]["autogrid4"]
-    use_wsl_autogrid = not windows_command_exists(autogrid_exe) and wsl_command_exists(autogrid_exe)
-    
-    if use_wsl_autogrid:
-        wsl_output_dir = to_wsl_path(output_dir)
-        autogrid_cmd = ["wsl", "bash", "-c", f"cd {wsl_output_dir} && {autogrid_exe} -p {gpf_path.name} -l autogrid.log"]
+    # Run AutoGrid (skip if already complete from checkpoint)
+    if checkpoint.is_autogrid_complete():
+        print("[CHECKPOINT] AutoGrid already completed, skipping...")
     else:
-        autogrid_cmd = build_command(autogrid_exe, ["-p", gpf_path.name, "-l", "autogrid.log"], use_wsl=False)
-    
-    run_command(autogrid_cmd, dry_run, cwd=output_dir if not use_wsl_autogrid else None)
+        autogrid_exe = config["paths"]["autogrid4"]
+        use_wsl_autogrid = not windows_command_exists(autogrid_exe) and wsl_command_exists(autogrid_exe)
+        
+        if use_wsl_autogrid:
+            wsl_output_dir = to_wsl_path(output_dir)
+            autogrid_cmd = ["wsl", "bash", "-c", f"cd {wsl_output_dir} && {autogrid_exe} -p {gpf_path.name} -l autogrid.log"]
+        else:
+            autogrid_cmd = build_command(autogrid_exe, ["-p", gpf_path.name, "-l", "autogrid.log"], use_wsl=False)
+        
+        run_command(autogrid_cmd, dry_run, cwd=output_dir if not use_wsl_autogrid else None)
+        
+        if not dry_run:
+            checkpoint.mark_autogrid_complete()
     
     # Sequential docking loop with controls
     seeds = config["wrapper"]["seeds"]
-    max_cycles = config.get("wrapper", {}).get("max_cycles", 20)  # Prevent infinite loops
+    max_cycles = config.get("wrapper", {}).get("max_cycles", 20)
     min_ligand_distance = config.get("wrapper", {}).get("min_ligand_distance", 2.0)
     
-    docked_ligands = []  # Store paths to docked ligand files
-    successful_docks = 0
+    # Restore docked ligands from checkpoint
+    docked_ligands = [Path(p) for p in checkpoint.get_docked_ligands()]
+    successful_docks = checkpoint.get_successful_docks()
     
     for i, seed in enumerate(seeds):
         if successful_docks >= max_cycles:
             print(f"\n=== Maximum cycles ({max_cycles}) reached, stopping ===")
             break
+        
+        # Skip completed seeds from checkpoint
+        if checkpoint.is_seed_completed(seed):
+            print(f"\n=== Skipping seed {seed} (already completed from checkpoint) ===")
+            continue
         
         print(f"\n=== Docking cycle {i+1}/{len(seeds)} (seed: {seed}) ===")
         
@@ -290,6 +398,11 @@ def run_wrap_n_shake_docking(config: Dict, dry_run: bool = False) -> None:
         
         run_command(cmd, dry_run, cwd=output_dir if not use_wsl_autodock else None)
         
+        # Skip post-processing in dry-run mode
+        if dry_run:
+            print(f"[DRY-RUN] Would extract best pose from {dlg_path}")
+            continue
+        
         # Extract best pose
         extract_best_pose(dlg_path, docked_ligand_path)
         
@@ -297,6 +410,8 @@ def run_wrap_n_shake_docking(config: Dict, dry_run: bool = False) -> None:
         if check_ligand_clash(docked_ligand_path, docked_ligands, min_ligand_distance):
             print(f"WARNING: Ligand {seed} clashes with existing ligands, discarding...")
             docked_ligand_path.unlink()  # Remove the clashed ligand
+            # Save checkpoint even for failed ligands
+            checkpoint.mark_seed_completed(seed, None, str(receptor_current))
             continue
         
         # Accept this ligand
@@ -308,7 +423,10 @@ def run_wrap_n_shake_docking(config: Dict, dry_run: bool = False) -> None:
             print(f"Masking receptor atoms near docked ligand {seed}...")
             receptor_next = output_dir / f"receptor_masked_{seed}.pdbqt"
             mask_receptor(receptor_current, [docked_ligand_path], receptor_next, cutoff=3.5)
-            receptor_current = receptor_next  # Use masked receptor for next iteration
+            receptor_current = receptor_next
+        
+        # Save checkpoint after successful docking
+        checkpoint.mark_seed_completed(seed, str(docked_ligand_path), str(receptor_current))
     
     print(f"\n=== Wrap 'n' Shake docking completed ===")
     print(f"Successfully docked {len(docked_ligands)} ligands out of {len(seeds)} attempts:")
@@ -320,10 +438,11 @@ def main(argv: List[str] | None = None) -> None:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--config", default="config.yml", help="Path to YAML config file")
     parser.add_argument("--dry-run", action="store_true", help="Print commands without executing")
+    parser.add_argument("--reset", action="store_true", help="Reset checkpoint and start fresh")
     args = parser.parse_args(argv)
     
     config = load_config(Path(args.config))
-    run_wrap_n_shake_docking(config, args.dry_run)
+    run_wrap_n_shake_docking(config, args.dry_run, args.reset)
 
 
 if __name__ == "__main__":
