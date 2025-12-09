@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Automate the entire docking and MD workflow from raw inputs."""
+"""Automate entire docking and MD workflow from raw inputs."""
 
 from __future__ import annotations
 
@@ -22,8 +22,14 @@ UPDATE_MANIFEST = SCRIPTS_DIR / "update_manifest.py"
 
 # Import state management
 sys.path.append(str(SCRIPTS_DIR.parent / 'utils'))
-from state_manager import StateManager
-
+try:
+    from state_manager import StateManager
+except ImportError:
+    # Fallback mock if utils not found/setup yet
+    class StateManager:
+        def __init__(self, path): self.data = {}
+        def get(self, k, d=None): return self.data.get(k, d)
+        def update(self, k, v): self.data[k] = v
 
 class PipelineError(RuntimeError):
     """Domain-specific error for pipeline failures."""
@@ -49,10 +55,10 @@ def make_parent(path: Path) -> None:
 
 def run_command(label: str, cmd: List[str], dry_run: bool, cwd: Path | None = None) -> bool:
     prefix = f"[STEP] {label}:"
-    print(prefix, " ".join(shlex.quote(part) for part in cmd))
+    print(prefix, " ".join(shlex.quote(str(part)) for part in cmd))
     if dry_run:
         return False
-    result = subprocess.run(cmd, cwd=cwd, check=False)
+    result = subprocess.run([str(c) for c in cmd], cwd=cwd, check=False)
     if result.returncode != 0:
         raise PipelineError(f"Command for '{label}' failed with exit code {result.returncode}.")
     return True
@@ -64,11 +70,7 @@ def run_wsl(label: str, command: str, dry_run: bool) -> bool:
 
 
 def wsl_command_exists(cmd_name: str, conda_env: str | None = None) -> bool:
-    """Check whether a command exists in WSL PATH by invoking `which`.
-
-    Returns True if `which <cmd_name>` returns exit code 0.
-    If conda_env is provided, activate that environment first.
-    """
+    """Check whether a command exists in WSL PATH by invoking `which`."""
     try:
         if conda_env:
             check_cmd = f"source ~/miniconda3/etc/profile.d/conda.sh && conda activate {conda_env} && which {cmd_name}"
@@ -162,11 +164,14 @@ def resolve_pose_files(working_dir: Path, entries: Iterable[str]) -> List[Path]:
             matches = list(working_dir.glob(pattern))
             pose_paths.extend(sorted(matches))
         else:
-            pose_paths.append((working_dir / pattern).resolve())
+            path = working_dir / pattern
+            if path.exists():
+                pose_paths.append(path.resolve())
+    
     unique = []
     seen = set()
     for path in pose_paths:
-        if path.exists() and path not in seen:
+        if path not in seen:
             unique.append(path)
             seen.add(path)
     return unique
@@ -186,6 +191,7 @@ def main(argv: List[str] | None = None) -> None:
     
     # Initialize state manager
     state_file = working_dir / "pipeline_state.json"
+    make_parent(state_file)
     state = StateManager(str(state_file))
     
     # Reset state if requested
@@ -200,9 +206,11 @@ def main(argv: List[str] | None = None) -> None:
 
     mgl_root = Path(config["paths"]["mgltools_root"]).resolve()
     mgl_paths = build_mgl_paths(mgl_root)
-    ensure_exists(mgl_paths["python"], "mglpython.exe")
-    ensure_exists(mgl_paths["prepare_receptor"], "prepare_receptor4.py")
-    ensure_exists(mgl_paths["prepare_ligand"], "prepare_ligand4.py")
+    # Ensure MGL tools exist
+    if not args.dry_run:
+        ensure_exists(mgl_paths["python"], "mglpython.exe")
+        ensure_exists(mgl_paths["prepare_receptor"], "prepare_receptor4.py")
+        ensure_exists(mgl_paths["prepare_ligand"], "prepare_ligand4.py")
 
     raw_protein = (working_dir / config["inputs"]["raw_protein_pdb"]).resolve()
     cleaned_protein = (working_dir / config["inputs"]["cleaned_protein_pdb"]).resolve()
@@ -212,13 +220,14 @@ def main(argv: List[str] | None = None) -> None:
     ligand_basename = (working_dir / config["inputs"]["ligand_basename"]).resolve()
     complex_output = (working_dir / config["inputs"]["complex_output_pdb"]).resolve()
 
-    ensure_exists(raw_protein, "raw protein PDB input")
-    ensure_exists(raw_ligand, "raw ligand input")
+    if not args.dry_run:
+        ensure_exists(raw_protein, "raw protein PDB input")
+        ensure_exists(raw_ligand, "raw ligand input")
 
     receptor_seed = str(config.get("receptor", {}).get("seed", "20231129"))
     wrapper_seeds = [str(seed) for seed in config.get("wrapper", {}).get("seeds", [])]
     
-    # Define pipeline stages
+    # Define pipeline stages in order
     pipeline_stages = [
         "clean_protein",
         "prepare_receptor",
@@ -231,19 +240,13 @@ def main(argv: List[str] | None = None) -> None:
     
     # Get current stage
     current_stage = state.get("current_stage", None)
-    completed_stages = state.get("completed_stages", [])
+    completed_stages = state.get("completed_stages", []) or []
     
-    print(f"Current stage: {current_stage}")
+    print(f"Current recorded stage: {current_stage}")
     print(f"Completed stages: {completed_stages}")
     
-    # Determine starting stage
-    if current_stage and current_stage in pipeline_stages:
-        start_idx = pipeline_stages.index(current_stage)
-    else:
-        start_idx = 0
-    
-    # Run stages from starting point
-    for i, stage in enumerate(pipeline_stages[start_idx:], start=start_idx):
+    # Run stages
+    for stage in pipeline_stages:
         if stage in completed_stages:
             print(f"Skipping completed stage: {stage}")
             continue
@@ -251,8 +254,10 @@ def main(argv: List[str] | None = None) -> None:
         print(f"\n=== Running stage: {stage} ===")
         
         try:
+            # ----------------------------------------------------------------
+            # STAGE: clean_protein
+            # ----------------------------------------------------------------
             if stage == "clean_protein":
-                # Step 1: clean protein PDB
                 make_parent(cleaned_protein)
                 preprocess_cmd = [
                     python_exe,
@@ -266,26 +271,24 @@ def main(argv: List[str] | None = None) -> None:
                     update_manifest(
                         python_exe,
                         manifest_path,
-                        commands=[" ".join(preprocess_cmd)],
+                        commands=[" ".join(map(str, preprocess_cmd))],
                         inputs={"raw_protein": str(raw_protein)},
                         outputs={"cleaned_protein": str(cleaned_protein)},
                     )
 
-                # Step 2: receptor PDBQT via MGLTools
+            # ----------------------------------------------------------------
+            # STAGE: prepare_receptor
+            # ----------------------------------------------------------------
+            elif stage == "prepare_receptor":
                 make_parent(receptor_pdbqt)
                 receptor_cmd = [
                     str(mgl_paths["python"]),
                     str(mgl_paths["prepare_receptor"]),
-                    "-r",
-                    cleaned_protein.name,
-                    "-o",
-                    str(receptor_pdbqt),
-                    "-A",
-                    "checkhydrogens",
-                    "-U",
-                    "nphs_lps",
-                    "-e",
-                    f"seed={receptor_seed}",
+                    "-r", cleaned_protein.name,
+                    "-o", str(receptor_pdbqt),
+                    "-A", "checkhydrogens",
+                    "-U", "nphs_lps",
+                    "-e", f"seed={receptor_seed}",
                 ]
                 executed = run_command(
                     "Prepare receptor PDBQT",
@@ -297,205 +300,190 @@ def main(argv: List[str] | None = None) -> None:
                     update_manifest(
                         python_exe,
                         manifest_path,
-                        commands=[" ".join(receptor_cmd)],
+                        commands=[" ".join(map(str, receptor_cmd))],
                         seeds=[receptor_seed],
                         outputs={"receptor_pdbqt": str(receptor_pdbqt)},
                     )
 
-            # Step 3: ligand PDBQT via MGLTools
-            make_parent(ligand_pdbqt)
-            ligand_cmd = [
-        str(mgl_paths["python"]),
-        str(mgl_paths["prepare_ligand"]),
-        "-l",
-        raw_ligand.name,
-        "-o",
-        str(ligand_pdbqt),
-        "-A",
-        "checkhydrogens",
-    ]
-    executed = run_command(
-        "Prepare ligand PDBQT",
-        ligand_cmd,
-        args.dry_run,
-        cwd=raw_ligand.parent,
-    )
-    if executed:
-        update_manifest(
-            python_exe,
-            manifest_path,
-            commands=[" ".join(ligand_cmd)],
-            outputs={"ligand_pdbqt": str(ligand_pdbqt)},
-        )
+            # ----------------------------------------------------------------
+            # STAGE: prepare_ligand
+            # ----------------------------------------------------------------
+            elif stage == "prepare_ligand":
+                make_parent(ligand_pdbqt)
+                ligand_cmd = [
+                    str(mgl_paths["python"]),
+                    str(mgl_paths["prepare_ligand"]),
+                    "-l", raw_ligand.name,
+                    "-o", str(ligand_pdbqt),
+                    "-A", "checkhydrogens",
+                ]
+                executed = run_command(
+                    "Prepare ligand PDBQT",
+                    ligand_cmd,
+                    args.dry_run,
+                    cwd=raw_ligand.parent,
+                )
+                if executed:
+                    update_manifest(
+                        python_exe,
+                        manifest_path,
+                        commands=[" ".join(map(str, ligand_cmd))],
+                        outputs={"ligand_pdbqt": str(ligand_pdbqt)},
+                    )
 
-    # Step 4: AmberTools / ACPYPE parameterization (WSL)
-    ligand_script = (working_dir / config["ambertools"]["ligand_script"]).resolve()
-    ensure_exists(ligand_script, "ligand_param.sh script")
-    make_parent(ligand_basename)
-    wsl_root = to_wsl_path(working_dir)
+            # ----------------------------------------------------------------
+            # STAGE: parameterize_ligand (AmberTools)
+            # ----------------------------------------------------------------
+            elif stage == "parameterize_ligand":
+                ligand_script = (working_dir / config["ambertools"]["ligand_script"]).resolve()
+                if not args.dry_run:
+                    ensure_exists(ligand_script, "ligand_param.sh script")
+                make_parent(ligand_basename)
+                wsl_root = to_wsl_path(working_dir)
 
-    amber_cfg = config.get("ambertools", {})
-    skip_amber = bool(amber_cfg.get("skip", False))
-    fail_on_missing = bool(amber_cfg.get("fail_on_missing", False))
+                amber_cfg = config.get("ambertools", {})
+                skip_amber = bool(amber_cfg.get("skip", False))
+                fail_on_missing = bool(amber_cfg.get("fail_on_missing", False))
 
-    ligand_param_cmd = (
-        f"cd {shlex.quote(wsl_root)} && "
-        f"bash {shlex.quote(rel_to_workdir(ligand_script, working_dir))} "
-        f"{shlex.quote(rel_to_workdir(raw_ligand, working_dir))} "
-        f"{shlex.quote(rel_to_workdir(ligand_basename, working_dir))}"
-    )
-
-    if skip_amber:
-        print("[INFO] Skipping AmberTools ligand parameterization (config: ambertools.skip = true)")
-        update_manifest(
-            python_exe,
-            manifest_path,
-            commands=["skip ligand parameterization per config"],
-            outputs={"ligand_param_basename": "(skipped)"},
-        )
-    else:
-        # Detect presence of antechamber in WSL (check in amber conda env)
-        if not wsl_command_exists("antechamber", conda_env="amber"):
-            msg = "WSL 'antechamber' not found; ligand parameterization cannot run."
-            if fail_on_missing:
-                raise PipelineError(msg + " Set ambertools.skip=true to skip this step or install AmberTools in WSL.")
-            print("[WARN] " + msg + " Skipping this step. Install AmberTools to enable parameterization.")
-            update_manifest(
-                python_exe,
-                manifest_path,
-                commands=["skip ligand parameterization (antechamber missing)"],
-                outputs={"ligand_param_basename": "(skipped - antechamber missing)"},
-            )
-        else:
-            executed = run_wsl("Ligand parameterization", ligand_param_cmd, args.dry_run)
-            if executed:
-                update_manifest(
-                    python_exe,
-                    manifest_path,
-                    commands=[ligand_param_cmd],
-                    outputs={"ligand_param_basename": str(ligand_basename)},
+                ligand_param_cmd = (
+                    f"cd {shlex.quote(wsl_root)} && "
+                    f"bash {shlex.quote(rel_to_workdir(ligand_script, working_dir))} "
+                    f"{shlex.quote(rel_to_workdir(raw_ligand, working_dir))} "
+                    f"{shlex.quote(rel_to_workdir(ligand_basename, working_dir))}"
                 )
 
-    # Step 5: AutoGrid / AutoDock batch
-    autodock_cmd = [
-        python_exe,
-        str(SCRIPTS_DIR / "run_autodock_batch.py"),
-        "--config",
-        str(Path(args.config).resolve()),
-    ]
-    if args.dry_run:
-        autodock_cmd.append("--dry-run")
-    executed = run_command("AutoDock batch", autodock_cmd, args.dry_run)
-    if executed:
-        update_manifest(
-            python_exe,
-            manifest_path,
-            commands=[" ".join(autodock_cmd)],
-            seeds=wrapper_seeds,
-        )
+                if skip_amber:
+                    print("[INFO] Skipping AmberTools parameterization (config: ambertools.skip=true)")
+                else:
+                    # Detect presence of antechamber in WSL
+                    if not wsl_command_exists("antechamber", conda_env="amber"):
+                        msg = "WSL 'antechamber' not found."
+                        if fail_on_missing:
+                            raise PipelineError(msg + " Install AmberTools or set skip=true.")
+                        print(f"[WARN] {msg} Skipping parameterization.")
+                    else:
+                        executed = run_wsl("Ligand parameterization", ligand_param_cmd, args.dry_run)
+                        if executed:
+                            update_manifest(
+                                python_exe,
+                                manifest_path,
+                                commands=[ligand_param_cmd],
+                                outputs={"ligand_param_basename": str(ligand_basename)},
+                            )
 
-    # Step 6: build complex (optional if poses missing)
-    pose_entries = config["inputs"].get("pose_files", [])
-    pose_paths = resolve_pose_files(working_dir, pose_entries)
-    if not pose_paths:
-        print("[WARN] No pose files found for complex construction; skipping this step.")
-    else:
-        make_parent(complex_output)
-        complex_cmd = [
-            python_exe,
-            str(SCRIPTS_DIR / "build_complex.py"),
-            str(cleaned_protein),
-            *[str(path) for path in pose_paths],
-            "-o",
-            str(complex_output),
-        ]
-        executed = run_command("Build complex", complex_cmd, args.dry_run)
-        if executed:
-            update_manifest(
-                python_exe,
-                manifest_path,
-                commands=[" ".join(complex_cmd)],
-                outputs={"complex_pdb": str(complex_output)},
-            )
-
-    # Step 7: GROMACS pipeline (WSL) - 完全自动化
-    gromacs_script = (working_dir / config["gromacs"].get("full_auto_script", "scripts/gromacs_full_auto.sh")).resolve()
-    if not gromacs_script.exists():
-        # 回退到旧脚本
-        gromacs_script = (working_dir / config["gromacs"]["pipeline_script"]).resolve()
-    ensure_exists(gromacs_script, "gromacs script")
-    
-    gmx_workdir = (working_dir / config["gromacs"]["workdir"]).resolve()
-    mdp_dir = (working_dir / config["gromacs"].get("mdp_dir", "mdp")).resolve()
-    make_parent(gmx_workdir / "placeholder")  # ensure directory exists
-    
-    # 构建完全自动化命令
-    gmx_cmd = (
-        f"cd {shlex.quote(wsl_root)} && "
-        f"export GMX={shlex.quote(config['paths'].get('gmx', 'gmx'))} && "
-        f"bash {shlex.quote(rel_to_workdir(gromacs_script, working_dir))} "
-        f"{shlex.quote(rel_to_workdir(complex_output, working_dir))} "
-        f"{shlex.quote(rel_to_workdir(raw_ligand, working_dir))} "
-        f"{shlex.quote(rel_to_workdir(gmx_workdir, working_dir))} "
-        f"{shlex.quote(rel_to_workdir(mdp_dir, working_dir))}"
-    )
-    executed = run_wsl("GROMACS pipeline", gmx_cmd, args.dry_run)
-    if executed:
-        update_manifest(
-            python_exe,
-            manifest_path,
-            commands=[gmx_cmd],
-            outputs={"gromacs_workdir": str(gmx_workdir)},
-        )
-
-    # Step 8: Stable hydrogen bond filtering
-    final_tpr = gmx_workdir / "final.tpr"
-    final_xtc = gmx_workdir / "final.xtc"
-    stable_hbond_output = working_dir / "final_results" / "stable_hbond_complex.pdb"
-    
-    if final_tpr.exists():
-        hbond_cmd = [
-            python_exe,
-            str(SCRIPTS_DIR / "filter_stable_hbonds.py"),
-            "--tpr",
-            str(final_tpr),
-            "--output",
-            str(stable_hbond_output)
-        ]
-        
-        # Add trajectory file if it exists
-        if final_xtc.exists():
-            hbond_cmd.extend(["--traj", str(final_xtc)])
-        
-        executed = run_command("Stable hydrogen bond filtering", hbond_cmd, args.dry_run)
-        if executed:
-            update_manifest(
-                python_exe,
-                manifest_path,
-                commands=[" ".join(hbond_cmd)],
-                outputs={"stable_hbond_complex": str(stable_hbond_output)},
-            )
-            
-            # Also run detailed analysis on the filtered results
-            if stable_hbond_output.exists():
-                analysis_output = working_dir / "hbond_analysis"
-                analysis_cmd = [
+            # ----------------------------------------------------------------
+            # STAGE: run_wrapper (AutoDock)
+            # ----------------------------------------------------------------
+            elif stage == "run_wrapper":
+                autodock_cmd = [
                     python_exe,
-                    str(SCRIPTS_DIR / "analyze_hbonds.py"),
-                    str(stable_hbond_output),
-                    "-o",
-                    str(analysis_output),
-                    "--csv"
+                    str(SCRIPTS_DIR / "run_autodock_batch.py"),
+                    "--config", str(Path(args.config).resolve()),
                 ]
-                run_command("Hydrogen bond analysis", analysis_cmd, args.dry_run)
-        else:
-            print("[WARN] Final TPR file not found, skipping stable hydrogen bond filtering")
+                if args.dry_run:
+                    autodock_cmd.append("--dry-run")
+                
+                executed = run_command("AutoDock batch", autodock_cmd, args.dry_run)
+                if executed:
+                    update_manifest(
+                        python_exe,
+                        manifest_path,
+                        commands=[" ".join(map(str, autodock_cmd))],
+                        seeds=wrapper_seeds,
+                    )
 
-        print("Pipeline completed with stable hydrogen bond filtering.")
-    
-    except Exception as e:
-        print(f"Error in stage {stage}: {e}")
-        raise PipelineError(f"Pipeline failed at stage {stage}: {e}")
+            # ----------------------------------------------------------------
+            # STAGE: build_complex
+            # ----------------------------------------------------------------
+            elif stage == "build_complex":
+                pose_entries = config["inputs"].get("pose_files", [])
+                pose_paths = resolve_pose_files(working_dir, pose_entries)
+                
+                if not pose_paths:
+                    print("[WARN] No pose files found. Skipping complex construction.")
+                else:
+                    make_parent(complex_output)
+                    complex_cmd = [
+                        python_exe,
+                        str(SCRIPTS_DIR / "build_complex.py"),
+                        str(cleaned_protein),
+                        *[str(path) for path in pose_paths],
+                        "-o", str(complex_output),
+                    ]
+                    executed = run_command("Build complex", complex_cmd, args.dry_run)
+                    if executed:
+                        update_manifest(
+                            python_exe,
+                            manifest_path,
+                            commands=[" ".join(map(str, complex_cmd))],
+                            outputs={"complex_pdb": str(complex_output)},
+                        )
+
+            # ----------------------------------------------------------------
+            # STAGE: run_gromacs (Includes Filtering)
+            # ----------------------------------------------------------------
+            elif stage == "run_gromacs":
+                gromacs_script = (working_dir / config["gromacs"].get("full_auto_script", "scripts/gromacs_full_auto.sh")).resolve()
+                if not gromacs_script.exists():
+                    gromacs_script = (working_dir / config["gromacs"]["pipeline_script"]).resolve()
+                
+                if not args.dry_run:
+                    ensure_exists(gromacs_script, "gromacs script")
+                
+                gmx_workdir = (working_dir / config["gromacs"]["workdir"]).resolve()
+                mdp_dir = (working_dir / config["gromacs"].get("mdp_dir", "mdp")).resolve()
+                make_parent(gmx_workdir / "placeholder")
+                wsl_root = to_wsl_path(working_dir)
+                
+                gmx_cmd = (
+                    f"cd {shlex.quote(wsl_root)} && "
+                    f"export GMX={shlex.quote(config['paths'].get('gmx', 'gmx'))} && "
+                    f"bash {shlex.quote(rel_to_workdir(gromacs_script, working_dir))} "
+                    f"{shlex.quote(rel_to_workdir(complex_output, working_dir))} "
+                    f"{shlex.quote(rel_to_workdir(raw_ligand, working_dir))} "
+                    f"{shlex.quote(rel_to_workdir(gmx_workdir, working_dir))} "
+                    f"{shlex.quote(rel_to_workdir(mdp_dir, working_dir))}"
+                )
+                executed = run_wsl("GROMACS pipeline", gmx_cmd, args.dry_run)
+                
+                if executed:
+                    update_manifest(
+                        python_exe,
+                        manifest_path,
+                        commands=[gmx_cmd],
+                        outputs={"gromacs_workdir": str(gmx_workdir)},
+                    )
+                    
+                    # 7b. Post-Gromacs: Stable H-Bond Filtering
+                    final_tpr = gmx_workdir / "final.tpr"
+                    final_xtc = gmx_workdir / "final.xtc"
+                    stable_hbond_output = working_dir / "final_results" / "stable_hbond_complex.pdb"
+                    
+                    if final_tpr.exists():
+                        hbond_cmd = [
+                            python_exe,
+                            str(SCRIPTS_DIR / "filter_stable_hbonds.py"),
+                            "--tpr", str(final_tpr),
+                            "--output", str(stable_hbond_output)
+                        ]
+                        if final_xtc.exists():
+                            hbond_cmd.extend(["--traj", str(final_xtc)])
+                            
+                        run_command("Stable H-Bond Filtering", hbond_cmd, args.dry_run)
+                    else:
+                        print("[WARN] final.tpr not found, skipping H-bond filter.")
+
+            # Update state after success
+            if not args.dry_run:
+                completed_stages.append(stage)
+                state.update("completed_stages", completed_stages)
+                state.update("current_stage", stage)
+
+        except Exception as e:
+            print(f"❌ Error in stage '{stage}': {e}")
+            raise PipelineError(f"Pipeline failed at stage {stage}") from e
+
+    print("\n✅ Pipeline completed successfully.")
 
 
 if __name__ == "__main__":
