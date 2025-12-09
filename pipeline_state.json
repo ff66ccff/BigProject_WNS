@@ -1,0 +1,13 @@
+{
+    "step": 0,
+    "current_stage": "completed",
+    "completed_stages": [
+        "clean_protein",
+        "prepare_receptor",
+        "prepare_ligand",
+        "parameterize_ligand",
+        "run_wrapper",
+        "run_gromacs"
+    ],
+    "reset": true
+}

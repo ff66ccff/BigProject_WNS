@@ -444,4 +444,8 @@ parameters:
   autogrid: {}
   autodock: {}
   gromacs: {}
-notes: ''
+notes: 'Skipped AmberTools ligand parameterization (config: ambertools.skip = true)
+
+  Skipped AmberTools ligand parameterization (config: ambertools.skip = true)
+
+  Skipped AmberTools ligand parameterization (config: ambertools.skip = true)'

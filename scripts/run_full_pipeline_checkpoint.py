@@ -412,13 +412,18 @@ def main(argv: List[str] | None = None) -> None:
                 pose_entries = wrapper_cfg.get("poses", ["docked_ligand_*.pdbqt"])
                 pose_paths = resolve_pose_files(wrapper_output_dir, pose_entries)
 
-                if not pose_paths:
+                if not pose_paths and not args.dry_run:
                     if wrapper_cfg.get("fail_on_missing", True):
                         raise PipelineError("No docked poses found after wrapper stage")
                     else:
                         print("[WARNING] No docked poses found, skipping complex building")
                         state.update("current_stage", "run_gromacs")
                         continue
+                
+                if args.dry_run and not pose_paths:
+                    print("[DRY-RUN] Skipping complex building (no docked poses in dry-run mode)")
+                    state.update("current_stage", "run_gromacs")
+                    continue
 
                 make_parent(complex_output)
                 complex_cmd = [

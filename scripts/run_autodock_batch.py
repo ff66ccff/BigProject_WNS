@@ -87,6 +87,33 @@ def run_command(cmd: List[str], dry_run: bool, cwd: Path | None = None) -> None:
         raise RuntimeError(f"Command '{cmd}' failed with exit code {result.returncode}")
 
 
+def merge_complex_files(receptor_pdbqt: Path, ligand_pdbqt_files: List[Path], output_pdb: Path) -> None:
+    """Merge receptor and ligand PDBQT files into a single PDB file."""
+    print(f"Merging complex files to {output_pdb}")
+    
+    with output_pdb.open('w', encoding='utf-8') as out_file:
+        # Copy receptor atoms (convert from PDBQT to PDB format)
+        with receptor_pdbqt.open('r', encoding='utf-8') as receptor_file:
+            for line in receptor_file:
+                if line.startswith(('ATOM', 'HETATM')):
+                    # Convert PDBQT to PDB format (remove charge and PDBQT specific fields)
+                    pdb_line = line[:66] + '\n'  # Truncate at column 66 for PDB format
+                    out_file.write(pdb_line)
+        
+        # Copy ligand atoms with unique residue IDs
+        res_id = 1
+        for ligand_file in ligand_pdbqt_files:
+            with ligand_file.open('r', encoding='utf-8') as lig_file:
+                for line in lig_file:
+                    if line.startswith(('ATOM', 'HETATM')):
+                        # Update residue ID to ensure uniqueness
+                        modified_line = line[:17] + f"{res_id:4d}" + line[22:66] + '\n'
+                        out_file.write(modified_line)
+                res_id += 1
+    
+    print(f"Created merged complex file with {len(ligand_pdbqt_files)} ligands")
+
+
 def main(argv: List[str] | None = None) -> None:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--config", default=str(CONFIG_PATH), help="Path to YAML config file")
@@ -195,6 +222,68 @@ def main(argv: List[str] | None = None) -> None:
                 use_wsl=False,
             )
         run_command(cmd, args.dry_run, cwd=output_dir if not use_wsl_autodock else None)
+
+    # After all docking runs, merge the results into a single complex file
+    print("\n=== Merging docking results ===")
+    
+    # Find all generated DLG files and extract best poses
+    dlg_files = list(output_dir.glob("wrapper_*.dlg"))
+    ligand_pdbqt_files = []
+    
+    for dlg_file in dlg_files:
+        # Extract ligand ID from filename
+        ligand_id = dlg_file.stem.replace("wrapper_", "")
+        output_ligand = output_dir / f"best_pose_{ligand_id}.pdbqt"
+        
+        # Extract best pose from DLG file
+        try:
+            extract_best_pose(dlg_file, output_ligand)
+            ligand_pdbqt_files.append(output_ligand)
+        except Exception as e:
+            print(f"Warning: Could not extract pose from {dlg_file}: {e}")
+    
+    # Create merged complex file
+    if ligand_pdbqt_files:
+        wrapped_complex_pdb = output_dir / "wrapped_complex.pdb"
+        merge_complex_files(receptor_in_output, ligand_pdbqt_files, wrapped_complex_pdb)
+        print(f"Successfully created {wrapped_complex_pdb} with {len(ligand_pdbqt_files)} ligands")
+    else:
+        print("Warning: No ligand poses were extracted, skipping complex merge")
+
+
+def extract_best_pose(dlg_file: Path, output_pdbqt: Path) -> None:
+    """Extract the best (lowest energy) pose from AutoDock DLG file."""
+    best_pose_lines = []
+    found_best = False
+    
+    with dlg_file.open('r', encoding='utf-8') as f:
+        lines = f.readlines()
+    
+    # Find the best pose section
+    for i, line in enumerate(lines):
+        if "DOCKED: USER    Run = 0" in line:
+            # Found the best pose, extract coordinates
+            j = i
+            while j < len(lines) and not lines[j].startswith("DOCKED: USER    Run = 1"):
+                if lines[j].startswith("DOCKED: ATOM"):
+                    best_pose_lines.append(lines[j][8:])  # Remove "DOCKED: " prefix
+                j += 1
+            found_best = True
+            break
+    
+    if not found_best:
+        raise RuntimeError(f"Could not find best pose in {dlg_file}")
+    
+    # Write the best pose to PDBQT file
+    with output_pdbqt.open('w', encoding='utf-8') as f:
+        # Write PDBQT header
+        f.write("REMARK  Best pose from AutoDock\n")
+        f.write("TORSDOF 0\n")
+        # Write atoms
+        for line in best_pose_lines:
+            f.write(line)
+    
+    print(f"Extracted best pose to {output_pdbqt}")
 
 
 if __name__ == "__main__":

@@ -27,6 +27,7 @@ autogrid:
   spacing: 0.375
 
 wrapper:
+  script: "scripts/run_autodock_batch.py"
   seeds: [101, 202, 303, 404, 505]
   output_dir: "autodock_runs"
   template_dir: "scripts/templates"
