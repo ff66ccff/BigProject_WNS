@@ -100,17 +100,31 @@ def run_gromacs_pipeline(input_pdb, work_dir, gmx_cmd="gmx", ligand_mol2=None):
                 has_ligand = False
                 if ligand_mol2 and Path(ligand_mol2).exists():
                     # Check for ACPYPE
+                    # Check for ACPYPE
                     acpype_exe = shutil.which("acpype")
+                    if not acpype_exe and Path("/usr/local/bin/acpype").exists():
+                        acpype_exe = "/usr/local/bin/acpype"
+                    
+                    # Check miniconda path (user specific)
+                    if not acpype_exe:
+                         home_acpype = Path.home() / "miniconda3/bin/acpype"
+                         if home_acpype.exists():
+                             acpype_exe = str(home_acpype)
+                        
+                    use_python_module = False
+                    
                     if acpype_exe:
                         acpype_cmd = [acpype_exe, "-i", str(ligand_mol2), "-n", "0", "-a", "gaff2", "-o", "gmx", "-f"]
-                        use_python_module = False
                     else:
                         # Fallback: try python -m acpype
                         try:
-                            subprocess.run(["python3", "-m", "acpype", "--help"], capture_output=True, check=True)
+                            # Verify module exists first
+                            subprocess.run(["python3", "-m", "acpype", "--help"], 
+                                         stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, check=True)
+                            print("ACPYPE found as python module")
                             acpype_cmd = ["python3", "-m", "acpype", "-i", str(ligand_mol2), "-n", "0", "-a", "gaff2", "-o", "gmx", "-f"]
                             use_python_module = True
-                        except subprocess.CalledProcessError:
+                        except (subprocess.CalledProcessError, FileNotFoundError):
                             acpype_cmd = None
                     
                     if acpype_cmd:
@@ -133,8 +147,9 @@ def run_gromacs_pipeline(input_pdb, work_dir, gmx_cmd="gmx", ligand_mol2=None):
                 
             elif stage == "generate_topology":
                 # Generate protein topology
-                protein_pdb = work_dir / "protein_only.pdb"
-                cmd = [gmx_cmd, "pdb2gmx", "-f", str(protein_pdb), 
+                # Since cwd=work_dir, we should use filenames relative to it
+                protein_pdb = "protein_only.pdb"  
+                cmd = [gmx_cmd, "pdb2gmx", "-f", protein_pdb, 
                        "-o", "protein.gro", "-p", "topol.top",
                        "-ff", "amber99sb-ildn", "-water", "tip3p", "-ignh"]
                 run_command(cmd, cwd=work_dir)
@@ -174,9 +189,10 @@ def run_gromacs_pipeline(input_pdb, work_dir, gmx_cmd="gmx", ligand_mol2=None):
                 state.update("current_stage", "solvate")
                 
             elif stage == "solvate":
-                # Solvate system
-                cmd = [gmx_cmd, "solvate", "-cp", "boxed.gro", 
-                       "-cs", "tip3p.gro", "-o", "solvated.gro", "-p", "topol.top"]
+                # Solvate box
+                # Use spc216.gro as generic pre-equilibrated water box
+                cmd = [gmx_cmd, "solvate", "-cp", "boxed.gro", "-cs", "spc216.gro", 
+                       "-o", "solvated.gro", "-p", "topol.top"]
                 run_command(cmd, cwd=work_dir)
                 state.update("current_stage", "add_ions")
                 

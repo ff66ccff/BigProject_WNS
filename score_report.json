@@ -1,0 +1,72 @@
+{
+  "ligand": {
+    "raw": {
+      "molecular_weight": 454.479
+    },
+    "normalized": {
+      "molecular_weight": 0.11361974999999999
+    },
+    "weighted": {
+      "molecular_weight": 0.011361975
+    },
+    "group_score": 0.11361974999999999
+  },
+  "protein": {
+    "raw": {
+      "residue_count": 981.0,
+      "hydrophobic_fraction": 0.5107033639143731,
+      "aromatic_fraction": 0.09683995922528033
+    },
+    "normalized": {
+      "residue_count": 0.47737226277372263,
+      "hydrophobic_fraction": 0.5267584097859327,
+      "aromatic_fraction": 0.9367991845056064
+    },
+    "weighted": {
+      "residue_count": 0.023868613138686132,
+      "hydrophobic_fraction": 0.05267584097859327,
+      "aromatic_fraction": 0.04683995922528032
+    },
+    "group_score": 0.6169220667127986
+  },
+  "binding": {
+    "raw": {
+      "binding_energy": -6.826,
+      "contact_residues": 27.0,
+      "min_distance": 2.1269033828549904,
+      "avg_distance": 0.0,
+      "hbond_count": 1.0,
+      "hydrophobic_contacts": 38.0,
+      "aromatic_contacts": 16.0,
+      "polar_contacts": 5.0,
+      "total_contacts": 450.0
+    },
+    "normalized": {
+      "contact_residues": 1.0,
+      "hbond_count": 0.2,
+      "min_distance": 1.0,
+      "hydrophobic_contacts": 1.0
+    },
+    "weighted": {
+      "contact_residues": 0.1,
+      "hbond_count": 0.03
+    },
+    "group_score": 0.7333333333333333
+  },
+  "final_score": 0.48795838334871067,
+  "reproducibility": {
+    "timestamp": "2025-12-10T14:44:06.723536",
+    "seeds": {
+      "autodock_seed": 101
+    },
+    "files_used": {
+      "complex": "complex\\complex.pdbqt"
+    }
+  },
+  "input_files": {
+    "ligand": "data/intermediate1.mol2",
+    "protein": "pdb/protein_clean.pdb",
+    "complex": "complex\\complex.pdbqt",
+    "config": "config.yml"
+  }
+}
