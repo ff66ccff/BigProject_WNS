@@ -8,6 +8,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import math
 import os
 import shutil
 import subprocess
@@ -182,12 +183,12 @@ def extract_best_pose(dlg_file: Path, output_pdbqt: Path) -> None:
     with dlg_file.open('r', encoding='utf-8') as f:
         lines = f.readlines()
     
-    # Find the best pose section
+# Find the best pose section
     for i, line in enumerate(lines):
-        if "DOCKED: USER    Run = 0" in line:
-            # Found the best pose, extract coordinates
+        if "DOCKED: USER    Run = 1" in line:
+            # Found best pose, extract coordinates
             j = i
-            while j < len(lines) and not lines[j].startswith("DOCKED: USER    Run = 1"):
+            while j < len(lines) and not lines[j].startswith("DOCKED: USER    Run = 2"):
                 if lines[j].startswith("DOCKED: ATOM"):
                     best_pose_lines.append(lines[j][8:])  # Remove "DOCKED: " prefix
                 j += 1
@@ -197,10 +198,9 @@ def extract_best_pose(dlg_file: Path, output_pdbqt: Path) -> None:
     if not found_best:
         raise RuntimeError(f"Could not find best pose in {dlg_file}")
     
-    # Write the best pose to PDBQT file
+# Write best pose to PDBQT file
     with output_pdbqt.open('w', encoding='utf-8') as f:
         # Write PDBQT header
-        f.write("REMARK  Best pose from AutoDock\n")
         f.write("TORSDOF 0\n")
         # Write atoms
         for line in best_pose_lines:

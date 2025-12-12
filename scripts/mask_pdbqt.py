@@ -14,6 +14,13 @@ class AtomRecord:
     
     def __init__(self, line: str) -> None:
         self.line = line.rstrip('\n')
+        # Skip non-atom lines
+        if not (line.startswith("ATOM") or line.startswith("HETATM")):
+            self.coord = (0.0, 0.0, 0.0)
+            self.serial = 0
+            self.is_atom = False
+            return
+            
         if len(line) >= 54:
             self.coord = (
                 float(line[30:38]),
