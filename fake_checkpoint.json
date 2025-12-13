@@ -1,0 +1,12 @@
+{
+  "completed_seeds": [
+    101,
+    202
+  ],
+  "docked_ligand_files": [
+    "lig101.pdbqt"
+  ],
+  "current_receptor": "rec_1.pdbqt",
+  "autogrid_complete": true,
+  "successful_docks": 1
+}

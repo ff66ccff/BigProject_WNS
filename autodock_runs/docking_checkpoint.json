@@ -1,7 +1,27 @@
 {
-  "completed_seeds": [],
-  "docked_ligand_files": [],
-  "current_receptor": null,
+  "completed_seeds": [
+    101,
+    202,
+    303,
+    404,
+    505,
+    606,
+    707,
+    808,
+    909,
+    1010
+  ],
+  "docked_ligand_files": [
+    "/mnt/d/PersonalFile/Documents/BigProject/SRC/project/autodock_runs/docked_ligand_101.pdbqt",
+    "/mnt/d/PersonalFile/Documents/BigProject/SRC/project/autodock_runs/docked_ligand_202.pdbqt",
+    "/mnt/d/PersonalFile/Documents/BigProject/SRC/project/autodock_runs/docked_ligand_303.pdbqt",
+    "/mnt/d/PersonalFile/Documents/BigProject/SRC/project/autodock_runs/docked_ligand_505.pdbqt",
+    "/mnt/d/PersonalFile/Documents/BigProject/SRC/project/autodock_runs/docked_ligand_606.pdbqt",
+    "/mnt/d/PersonalFile/Documents/BigProject/SRC/project/autodock_runs/docked_ligand_707.pdbqt",
+    "/mnt/d/PersonalFile/Documents/BigProject/SRC/project/autodock_runs/docked_ligand_808.pdbqt",
+    "/mnt/d/PersonalFile/Documents/BigProject/SRC/project/autodock_runs/docked_ligand_909.pdbqt"
+  ],
+  "current_receptor": "/mnt/d/PersonalFile/Documents/BigProject/SRC/project/autodock_runs/receptor_masked_909.pdbqt",
   "autogrid_complete": true,
-  "successful_docks": 0
+  "successful_docks": 8
 }
